@@ -425,7 +425,16 @@ export function replaceStarWithIcon(str: string): ComponentChildren {
   return parts.map((part, i) => (
     <span key={i}>
       {part}
-      {i < parts.length - 1 ? <StarIcon size={16} style={{ marginInlineStart: "3px", marginInlineEnd: "1px", verticalAlign: "-2px" }} /> : null}
+      {i < parts.length - 1 ? (
+        <StarIcon
+          size="1.08em"
+          style={{
+            marginInlineStart: "0.22em",
+            marginInlineEnd: "0.06em",
+            verticalAlign: "-0.14em",
+          }}
+        />
+      ) : null}
     </span>
   ));
 }

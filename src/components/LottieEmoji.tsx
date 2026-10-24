@@ -12,7 +12,7 @@ export function LottieEmoji({
   style,
 }: {
   src: string | object;
-  size?: number;
+  size?: number | string;
   class?: string;
   style?: StyleProp;
 }) {
@@ -40,6 +40,8 @@ export function LottieEmoji({
     };
   }, [src]);
 
+  const sizeCss = typeof size === "number" ? `${size}px` : size;
+
   return (
     <span
       ref={containerRef}
@@ -48,8 +50,8 @@ export function LottieEmoji({
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
-        width: `${size}px`,
-        height: `${size}px`,
+        width: sizeCss,
+        height: sizeCss,
         verticalAlign: "middle",
         overflow: "hidden",
         flex: "none",
@@ -60,11 +62,11 @@ export function LottieEmoji({
 }
 
 /** Animated Telegram Star (ID 6190358366842262799) */
-export function StarIcon({ size = 18, style }: { size?: number; style?: StyleProp }) {
+export function StarIcon({ size = 18, style }: { size?: number | string; style?: StyleProp }) {
   return <LottieEmoji src="/emojis/star.json" size={size} style={style} />;
 }
 
 /** Animated Telegram Star Tile for Wallet History (ID 6190392129580175284) */
-export function StarTileEmoji({ size = 22, style }: { size?: number; style?: StyleProp }) {
+export function StarTileEmoji({ size = 22, style }: { size?: number | string; style?: StyleProp }) {
   return <LottieEmoji src="/emojis/star-tile.json" size={size} style={style} />;
 }
