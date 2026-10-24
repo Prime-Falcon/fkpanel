@@ -265,5 +265,16 @@
   "err.INVALID_AMOUNT": "{min}〜{max}の金額を入力してください。",
   "err.BANNED": "アカウントが停止されています。",
   "err.CHANNEL_REQUIRED": "先にお知らせチャンネルに参加してください。",
-  "err.UNAUTHORIZED": "Telegramからアプリを開いてください。"
+  "err.UNAUTHORIZED": "Telegramからアプリを開いてください。",
+  "wallet.mfs": "MFS, Card, Crypto",
+  "wallet.mfsSub": "bKash, Nagad, Rocket, Cards, Binance",
+  "wallet.chooseMethod": "Add funds",
+  "wallet.chooseMethodSub": "Choose how you want to add funds",
+  "topup.methodStars": "Telegram Stars",
+  "topup.methodMfs": "MFS, Card, Crypto",
+  "topup.amountBdt": "Amount in BDT (৳)",
+  "topup.payBdt": "Pay {amount} ৳",
+  "topup.bdtEquivalent": "≈ ${usd} USD ({stars} ⭐ credited to balance)",
+  "topup.mfsNote": "Secure automated checkout via bKash, Nagad, Rocket, Card & Crypto.",
+  "topup.redirecting": "Redirecting to checkout…"
 }

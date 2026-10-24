@@ -6,7 +6,7 @@
 // ones with `services?service=<ids>`. Only changed rows are written.
 import type { Env } from "./env";
 import { looksLikeNotPanelKey } from "../shared/brand";
-import { npCall, npKey, NotPanelError, usdToMicro, type NpService } from "./notpanel";
+import { npCall, npKey, NotPanelError, usdToMicro, detectPlatformAndCategory, fieldsForType, type NpService } from "./notpanel";
 import { alertAdmins } from "./alerts";
 import { rebuildSummaryStmts } from "./catalog";
 import { bumpCatalogStmt, getSettings, setSettings, type Settings } from "./settings";
@@ -293,3 +293,105 @@ async function finish(env: Env, s: Settings, stats: SyncStats, state: SyncState 
     ...(state && !stats.error ? { last_catalog_at: state.catalogAt } : {}),
   });
 }
+
+/**
+ * On-demand direct sync: immediately fetches the full service catalog from the provider,
+ * writes them in safe D1 chunks, updates category summary, and saves sync summary.
+ */
+export async function runImmediateSync(env: Env): Promise<{ ok: boolean; total: number; added: number; updated: number }> {
+  const s = await getSettings(env, { fresh: true });
+  const key = npKey(env, s);
+  if (!looksLikeNotPanelKey(key)) throw new Error("No valid provider API key configured");
+
+  const all = await npCall<any[]>(env, "services");
+  if (!Array.isArray(all) || !all.length) throw new Error("No services returned by provider API");
+
+  const byPlatform = new Map<string, any[]>();
+  for (const item of all) {
+    const rate = Number(item.rate);
+    const min = Number(item.min);
+    if (!rate || rate <= 0 || !min || min <= 0) continue;
+    const d = detectPlatformAndCategory(String(item.category ?? ""), String(item.name ?? ""));
+    if (!byPlatform.has(d.platform)) byPlatform.set(d.platform, []);
+    byPlatform.get(d.platform)!.push({ ...item, ...d });
+  }
+
+  const selected: any[] = [];
+  for (const list of byPlatform.values()) {
+    selected.push(...list.slice(0, 60));
+  }
+
+  const now = Math.floor(Date.now() / 1000);
+  const ids = selected.map((item) => Number(item.service));
+  const { results } = await env.DB.prepare(
+    "SELECT id, hash, rate FROM services WHERE id IN (SELECT value FROM json_each(?1))",
+  )
+    .bind(JSON.stringify(ids))
+    .all<{ id: number; hash: string; rate: number }>();
+  const have = new Map(results.map((r) => [r.id, r]));
+
+  let added = 0;
+  let updated = 0;
+  const rows: unknown[][] = [];
+
+  for (let i = 0; i < selected.length; i++) {
+    const item = selected[i];
+    const id = Number(item.service);
+    const typeKey = String(item.type ?? "Default").toLowerCase().replace(/[\s-]+/g, "_");
+    const rate = usdToMicro(item.rate);
+    const e = have.get(id);
+    if (!e) added++;
+    else updated++;
+
+    const fp = fingerprint({
+      service: String(id),
+      name: item.name,
+      type: item.type || "Default",
+      rate: String(item.rate),
+      min: String(item.min),
+      max: String(item.max),
+      refill: !!item.refill,
+      dripfeed: !!item.dripfeed,
+      cancel: !!item.cancel,
+      average_time_minutes: 60,
+    } as CatalogItem);
+
+    rows.push([
+      id,
+      item.platform,
+      item.category,
+      item.categorySlug,
+      item.name,
+      typeKey,
+      rate,
+      Number(item.min) || 1,
+      Number(item.max) || 1,
+      1,
+      item.refill ? 1 : 0,
+      item.cancel ? 1 : 0,
+      item.dripfeed ? 1 : 0,
+      null,
+      JSON.stringify(fieldsForType(typeKey)),
+      60,
+      null,
+      i,
+      fp,
+    ]);
+  }
+
+  for (let i = 0; i < rows.length; i += 100) {
+    const chunk = rows.slice(i, i + 100);
+    await env.DB.prepare(UPSERT).bind(JSON.stringify(chunk), 1, now).run();
+  }
+
+  await env.DB.batch([...rebuildSummaryStmts(env, s), bumpCatalogStmt(env)]);
+  const stats: SyncStats = { at: now, total: selected.length, added, updated, removed: 0, priceUp: 0, priceDown: 0 };
+  await setSettings(env, {
+    sync_state: "",
+    last_sync_at: now,
+    last_sync_summary: JSON.stringify(stats),
+  });
+
+  return { ok: true, total: selected.length, added, updated };
+}
+

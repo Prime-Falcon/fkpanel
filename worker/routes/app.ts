@@ -12,6 +12,7 @@ import { attachReferral, channelGateRequired, onHomeReached, parseRef, referralS
 import { checkDraft, orderCharge } from "../pricing";
 import { brandInfo } from "../brand";
 import { getSettings, type Settings } from "../settings";
+import { createPipraPayInvoice } from "../piprapay";
 
 export interface UserRow {
   id: number;
@@ -149,6 +150,10 @@ async function meView(c: C, background?: (p: Promise<unknown>) => void): Promise
     referralEnabled: !!s.referral_enabled,
     referralReward: rewardStars(s),
     botUsername: s.bot_username || null,
+    piprapayEnabled: !!(s.piprapay_api_url && s.piprapay_api_key),
+    bdtPerUsd: s.bdt_per_usd || 125,
+    minTopupBdt: s.min_topup_bdt || 50,
+    maxTopupBdt: s.max_topup_bdt || 25000,
     brand: brandInfo(s),
     recent: results.map((r) => ({ id: r.id, serviceId: r.service_id, serviceName: r.service_name, platform: r.platform, link: r.link, quantity: r.quantity })),
   };
@@ -388,6 +393,37 @@ app.post("/wallet/topup", async (c) => {
     if (e instanceof TooManyInvoices) return err(c, 429, "TOO_MANY_REQUESTS");
     throw e;
   }
+});
+
+app.post("/wallet/topup-piprapay", async (c) => {
+  if (await channelGateRequired(c.env, c.get("settings"), c.get("user"))) return err(c, 403, "CHANNEL_REQUIRED");
+  const b = await readBody<{ amountBdt: number; customerName?: string; customerEmail?: string; customerPhone?: string }>(c);
+  if (!b) return err(c, 400, "INVALID_BODY");
+  const s = c.get("settings");
+  if (!s.piprapay_api_url || !s.piprapay_api_key) return err(c, 400, "GATEWAY_DISABLED");
+  const amountBdt = Number(b.amountBdt);
+  const min = s.min_topup_bdt || 50;
+  const max = s.max_topup_bdt || 25000;
+  if (!Number.isFinite(amountBdt) || amountBdt < min || amountBdt > max) {
+    return err(c, 400, "INVALID_AMOUNT", { min: `${min} ৳`, max: `${max} ৳` });
+  }
+
+  const user = c.get("user");
+  const origin = new URL(c.req.url).origin;
+  const inv = await createPipraPayInvoice(c.env, s, {
+    userId: user.id,
+    amountBdt,
+    customerName: b.customerName || [user.first_name, user.last_name].filter(Boolean).join(" ") || "Customer",
+    customerEmail: b.customerEmail,
+    customerPhone: b.customerPhone,
+    origin,
+  });
+
+  if (!inv.ok) {
+    return err(c, 502, "GATEWAY_ERROR", { message: inv.error });
+  }
+
+  return c.json({ ok: true, paymentId: inv.paymentId, paymentUrl: inv.paymentUrl, invoiceId: inv.invoiceId });
 });
 
 app.get("/payments/:id", async (c) => {

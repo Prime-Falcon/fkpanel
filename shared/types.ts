@@ -93,6 +93,10 @@ export interface Me {
   /** Whole Stars a referrer earns per friend who joins (credited as their dollar value) */
   referralReward: number;
   botUsername: string | null;
+  piprapayEnabled?: boolean;
+  bdtPerUsd?: number;
+  minTopupBdt?: number;
+  maxTopupBdt?: number;
   recent: RecentOrder[];
   /** Owner's branding (name, logo, colors, links) */
   brand: BrandInfo;

@@ -36,7 +36,7 @@ export async function checkNotPanelBalance(env: Env): Promise<void> {
   try {
     const b = usdToMicro((await npCall<{ balance: string }>(env, "balance")).balance);
     if (b < s.low_balance)
-      await alertAdmins(env, "low_balance", `Your NotPanel balance is <b>$${(b / 1e6).toFixed(2)}</b>. Top it up on notpanel.com, or new orders will fail.`);
+      await alertAdmins(env, "low_balance", `Your provider balance is <b>$${(b / 1e6).toFixed(2)}</b>. Top it up, or new orders will fail.`);
   } catch (e) {
     console.warn("balance check failed", (e as Error).message);
   }

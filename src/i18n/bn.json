@@ -265,5 +265,16 @@
   "err.INVALID_AMOUNT": "{min} থেকে {max}-এর মধ্যে একটি পরিমাণ দিন।",
   "err.BANNED": "আপনার অ্যাকাউন্ট ব্লক করা হয়েছে।",
   "err.CHANNEL_REQUIRED": "অনুগ্রহ করে আগে আমাদের আপডেট চ্যানেলে যোগ দিন।",
-  "err.UNAUTHORIZED": "অনুগ্রহ করে Telegram থেকে অ্যাপটি খুলুন।"
+  "err.UNAUTHORIZED": "অনুগ্রহ করে Telegram থেকে অ্যাপটি খুলুন।",
+  "wallet.mfs": "এমএফএস, কার্ড, ক্রিপ্টো",
+  "wallet.mfsSub": "বিকাশ, নগদ, রকেট, কার্ড, ক্রিপ্টো",
+  "wallet.chooseMethod": "ফান্ড যোগ করুন",
+  "wallet.chooseMethodSub": "আপনার পছন্দের পেমেন্ট মাধ্যম বেছে নিন",
+  "topup.methodStars": "Telegram Stars",
+  "topup.methodMfs": "এমএফএস, কার্ড, ক্রিপ্টো",
+  "topup.amountBdt": "পরিমাণ (৳)",
+  "topup.payBdt": "পরিশোধ করুন {amount} ৳",
+  "topup.bdtEquivalent": "≈ ${usd} USD (ব্যালেন্সে {stars} ⭐ যোগ হবে)",
+  "topup.mfsNote": "বিকাশ, নগদ, রকেট, কার্ড এবং ক্রিপ্টোর মাধ্যমে স্বয়ংক্রিয় পেমেন্ট।",
+  "topup.redirecting": "পেমেন্ট গেটওয়েতে নিয়ে যাওয়া হচ্ছে…"
 }

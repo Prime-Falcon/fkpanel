@@ -62,6 +62,12 @@ export const DEFAULTS = {
   names_done: 0, // 1 once the bot was named in every profile language after setup; names are never set automatically again // Telegram rate limit: resume menu/profile updates after this time
   commands_admins: "", // admin chats that got the admin menu
   setup_steps: "", // comma list of setup steps that finished
+  // PipraPay / OptimumPay gateway
+  piprapay_api_url: "",
+  piprapay_api_key: "",
+  bdt_per_usd: 125,
+  min_topup_bdt: 50,
+  max_topup_bdt: 25000,
 };
 
 export type Settings = typeof DEFAULTS;

@@ -16,8 +16,8 @@ export interface Owners {
 function keyProblem(e: unknown): string | null {
   if (!(e instanceof ApiError)) return null;
   const d = typeof e.details?.message === "string" ? e.details.message : "";
-  if (e.code === "NOT_NOTPANEL_KEY") return `This isn't a NotPanel API key.${d ? ` ${d}` : ""}`;
-  if (e.code === "NOTPANEL_REJECTED") return d || "NotPanel didn't accept this key. Check that you copied all of it and that it is active.";
+  if (e.code === "NOT_NOTPANEL_KEY") return `This isn't a valid provider API key.${d ? ` ${d}` : ""}`;
+  if (e.code === "NOTPANEL_REJECTED") return d || "Provider didn't accept this key. Check that you copied all of it and that it is active.";
   return null;
 }
 
@@ -29,16 +29,16 @@ export function NotPanelKeySection({ hint, source, onSaved }: { hint: string | n
 
   const save = async () => {
     if (busy || !key) return;
-    if (!looksLikeNotPanelKey(key)) return void setErr("This isn't a NotPanel API key. It starts with np_live_.");
-    // Orders are tracked by their NotPanel ID under the key that placed them
-    if (hint && !(await confirmDialog("Only use a key from the same NotPanel account. A key from a different account can't track orders that were placed with the current key. Save the new key?", "Save key", "Cancel"))) return;
+    if (!looksLikeNotPanelKey(key)) return void setErr("This isn't a valid provider API key.");
+    // Orders are tracked by their provider ID under the key that placed them
+    if (hint && !(await confirmDialog("Only use a key from the same provider account. A key from a different account can't track orders that were placed with the current key. Save the new key?", "Save key", "Cancel"))) return;
     setBusy(true);
     setErr(null);
     try {
       const r = await api<{ ok: boolean; key_hint?: string }>("/admin/notpanel-key", { method: "PUT", body: { key } });
       setValue("");
       onSaved(r.key_hint ?? null);
-      toast("NotPanel key saved", "ok");
+      toast("Provider key saved", "ok");
     } catch (e) {
       const p = keyProblem(e);
       if (p) setErr(p);
@@ -49,8 +49,8 @@ export function NotPanelKeySection({ hint, source, onSaved }: { hint: string | n
 
   return (
     <Section
-      header="NotPanel API key"
-      footer="The key is checked with NotPanel before it is saved. A key saved here is used instead of the one set on your host. Use a key from the same NotPanel account: orders placed with an old key from a different account can no longer be tracked. Only the last characters of the key are ever shown."
+      header="Provider API key"
+      footer="The key is checked with provider before it is saved. A key saved here is used instead of the one set on your host. Use a key from the same provider account: orders placed with an old key from a different account can no longer be tracked. Only the last characters of the key are ever shown."
     >
       <dl class="card">
         <Kv label="Current key">
@@ -66,7 +66,7 @@ export function NotPanelKeySection({ hint, source, onSaved }: { hint: string | n
         dir="ltr"
         value={value}
         onInput={(v) => (setValue(v), setErr(null))}
-        placeholder="np_live_..."
+        placeholder="API key..."
         error={err}
         enterKeyHint="go"
       />

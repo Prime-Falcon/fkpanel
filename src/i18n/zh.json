@@ -265,5 +265,16 @@
   "err.INVALID_AMOUNT": "请输入 {min} 到 {max} 之间的金额。",
   "err.BANNED": "你的账号已被封禁。",
   "err.CHANNEL_REQUIRED": "请先加入我们的更新频道。",
-  "err.UNAUTHORIZED": "请从 Telegram 中打开应用。"
+  "err.UNAUTHORIZED": "请从 Telegram 中打开应用。",
+  "wallet.mfs": "MFS, Card, Crypto",
+  "wallet.mfsSub": "bKash, Nagad, Rocket, Cards, Binance",
+  "wallet.chooseMethod": "Add funds",
+  "wallet.chooseMethodSub": "Choose how you want to add funds",
+  "topup.methodStars": "Telegram Stars",
+  "topup.methodMfs": "MFS, Card, Crypto",
+  "topup.amountBdt": "Amount in BDT (৳)",
+  "topup.payBdt": "Pay {amount} ৳",
+  "topup.bdtEquivalent": "≈ ${usd} USD ({stars} ⭐ credited to balance)",
+  "topup.mfsNote": "Secure automated checkout via bKash, Nagad, Rocket, Card & Crypto.",
+  "topup.redirecting": "Redirecting to checkout…"
 }

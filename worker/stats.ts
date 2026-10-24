@@ -42,9 +42,9 @@ export async function sendStats(env: Env, chatId: number): Promise<void> {
   let balance = "unavailable";
   try {
     const b = usdToMicro((await npCall<{ balance: string }>(env, "balance")).balance);
-    balance = `<b>${usd(b)}</b>${b < s.low_balance ? " ⚠️ low, top up on notpanel.com" : ""}`;
+    balance = `<b>${usd(b)}</b>${b < s.low_balance ? " ⚠️ low balance" : ""}`;
   } catch {
-    /* NotPanel unreachable: show the rest anyway */
+    /* Provider unreachable: show the rest anyway */
   }
   const block = (title: string, p: "d" | "w" | "a") =>
     `<b>${title}</b>\n` +
@@ -57,7 +57,7 @@ export async function sendStats(env: Env, chatId: number): Promise<void> {
     `👥 Users: <b>${n(u.total)}</b> (+${n(u.today)} today)\n` +
     `⏳ Open orders: <b>${n((open.results[0] as { n: number }).n)}</b>\n` +
     `🎁 Referrals: <b>${n(r.joined)}</b> joined (+${n(r.today)} paid today)\n` +
-    `🏦 NotPanel balance: ${balance}`;
+    `🏦 Provider balance: ${balance}`;
   await tg(env.BOT_TOKEN, "sendMessage", {
     chat_id: chatId,
     text,

@@ -4,6 +4,7 @@ import type { Env } from "../env";
 import type { NpStatus } from "../notpanel";
 import { applyStatus, type OrderRow } from "../orders";
 import { getSettings } from "../settings";
+import { settlePipraPayPayment } from "../piprapay";
 
 export const hooks = new Hono<{ Bindings: Env }>();
 
@@ -13,7 +14,42 @@ export async function cleanupWebhookEvents(env: Env): Promise<void> {
   await env.DB.prepare("DELETE FROM webhook_events WHERE received_at < ?1").bind(cutoff).run();
 }
 
-/** NotPanel order events. Signed with the secret we got from webhook.add; delivered at least once. */
+/** PipraPay / OptimumPay IPN / Webhook */
+hooks.post("/piprapay", async (c) => {
+  let ppId = "";
+  const ct = c.req.header("content-type") || "";
+  if (ct.includes("application/json")) {
+    try {
+      const data: any = await c.req.json();
+      ppId = String(data?.pp_id || data?.ppId || "");
+    } catch {}
+  } else {
+    try {
+      const body = await c.req.parseBody();
+      ppId = String(body["pp_id"] || body["ppId"] || "");
+    } catch {}
+  }
+
+  if (!ppId) return c.text("missing pp_id", 400);
+
+  const res = await settlePipraPayPayment(c.env, ppId);
+  return c.text(res.ok ? "OK" : "IGNORED", res.ok ? 200 : 400);
+});
+
+/** PipraPay / OptimumPay customer return URL */
+hooks.get("/piprapay/return", async (c) => {
+  const ppId = c.req.query("pp_id") || "";
+  if (ppId) {
+    try {
+      await settlePipraPayPayment(c.env, ppId);
+    } catch (e) {
+      console.error("settlePipraPayPayment return error", e);
+    }
+  }
+  return c.redirect("/wallet");
+});
+
+/** Provider order events. Signed with the secret we got from webhook.add; delivered at least once. */
 hooks.post("/notpanel", async (c) => {
   const body = await c.req.text();
   const ts = c.req.header("x-webhook-timestamp") ?? "";

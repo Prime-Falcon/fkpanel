@@ -217,11 +217,11 @@ function Stat({ label, ok, sub, wide, children }: { label: string; ok?: boolean;
   );
 }
 
-/** "Example: a $1.00 NotPanel service sells for $1.40." */
+/** "Example: a $1.00 provider service sells for $1.40." */
 function Example({ markup }: { markup: number }) {
   return (
     <>
-      Example: a <Num>{money(ONE_USD)}</Num> NotPanel service sells for <Num>{money(sellFor(ONE_USD, markup))}</Num>.
+      Example: a <Num>{money(ONE_USD)}</Num> provider service sells for <Num>{money(sellFor(ONE_USD, markup))}</Num>.
     </>
   );
 }
@@ -265,7 +265,7 @@ function MarkupEditor({ value, onChange, presets = [20, 30, 50, 100], class: cls
               onChange(Math.max(0, Math.min(MAX_MARKUP, Number(raw) || 0)));
             }}
           />
-          <span class="qty-unit">on top of NotPanel prices</span>
+          <span class="qty-unit">on top of provider prices</span>
         </div>
         <button type="button" class="iconbtn lg qty-btn" aria-label="Raise markup by 5%" onClick={() => step(1)}>
           <Icon name="plus" size={20} stroke={2.4} />
@@ -309,6 +309,23 @@ function syncLine(l: NonNullable<Overview["lastSync"]>) {
 
 function AdminHome() {
   const res = useAsync(() => api<Overview>("/admin/overview"), []);
+  const [syncing, setSyncing] = useState(false);
+  const syncNow = async () => {
+    if (syncing) return;
+    haptic.tap();
+    setSyncing(true);
+    try {
+      const r = await api<{ ok: boolean; total: number; added: number; updated: number }>("/admin/sync", { method: "POST" });
+      invalidate();
+      toast(`Synced ${r.total} services (${r.added} added, ${r.updated} updated)`, "ok");
+      res.reload();
+    } catch (e) {
+      fail(e);
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   return (
     <Page back="/profile" title="Admin" sub="Only you can see this" size="large">
       <Loader
@@ -334,22 +351,28 @@ function AdminHome() {
                     <Icon name="plug" size={20} stroke={1.8} />
                   </span>
                   <div>
-                    <b class="t-headline">Your NotPanel account</b>
+                    <b class="t-headline">Provider account</b>
                   </div>
                   <span class={`status ${o.npError ? "st-cancel" : "st-done"}`}>{o.npError ? "Error" : "Connected"}</span>
                 </div>
                 <div class="head">
                   <div>
-                    <span>NotPanel balance</span>
+                    <span>Provider balance</span>
                     <b class="num-m">{o.npBalance !== null ? <Num>{money(o.npBalance)}</Num> : "—"}</b>
                   </div>
-                  <Chip tint label="Top up on notpanel.com" onClick={() => openLink(NP_WALLET)}>
-                    Top up
-                    <Icon name="out" size={14} stroke={2.4} />
-                  </Chip>
+                  <div style="display: flex; gap: 8px;">
+                    <Chip tint label="Sync catalog from API" onClick={syncNow}>
+                      {syncing ? <span class="spin" style="width: 14px; height: 14px;" /> : <Icon name="refill" size={14} stroke={2.4} />}
+                      {syncing ? "Syncing…" : "Sync API"}
+                    </Chip>
+                    <Chip tint label="Top up" onClick={() => openLink(NP_WALLET)}>
+                      Top up
+                      <Icon name="out" size={14} stroke={2.4} />
+                    </Chip>
+                  </div>
                 </div>
                 {o.npError ? <Notice tone="error">{o.npError}</Notice> : null}
-                {low ? <Notice tone="warn">Low balance: orders will fail when your NotPanel balance runs out.</Notice> : null}
+                {low ? <Notice tone="warn">Low balance: orders will fail when your provider balance runs out.</Notice> : null}
                 {!o.npError && !low ? <span class="t-footnote hint">Every order is paid from this balance.</span> : null}
               </div>
 
@@ -357,7 +380,7 @@ function AdminHome() {
 
               {n ? (
                 <Notice tone="warn" onClick={() => navigate("/admin/prices?q=attention")}>
-                  {plural(n, "service")} {n === 1 ? "is" : "are"} hidden because {n === 1 ? "its" : "their"} fixed price is below NotPanel's cost. <b>Review</b>
+                  {plural(n, "service")} {n === 1 ? "is" : "are"} hidden because {n === 1 ? "its" : "their"} fixed price is below provider cost. <b>Review</b>
                 </Notice>
               ) : null}
 
@@ -420,12 +443,30 @@ function AdminPrices({ q: initialQ }: { q: string }) {
   const platforms = useAsync(() => (attention ? Promise.resolve([] as AdminPlatformRow[]) : api<AdminPlatformRow[]>("/admin/platforms")), []);
   const [markup, setMarkup] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
+  const [syncing, setSyncing] = useState(false);
   const [q, setQ] = useState(attention ? "" : initialQ);
   const [edit, setEdit] = useState<AdminServiceRow | null>(null);
   // Search needs 2+ characters; the attention view lists straight away. Pages of 50 via "Show more".
   const pg = usePaged<AdminServiceRow>(attention ? "/admin/services?attention=1" : q.trim().length >= 2 ? `/admin/services?q=${enc(q.trim())}` : null, attention ? 0 : 300, "offset");
   const results = pg.items;
   const search = pg.reload;
+
+  const syncNow = async () => {
+    if (syncing) return;
+    haptic.tap();
+    setSyncing(true);
+    try {
+      const r = await api<{ ok: boolean; total: number; added: number; updated: number }>("/admin/sync", { method: "POST" });
+      invalidate();
+      toast(`Synced ${r.total} services (${r.added} added, ${r.updated} updated)`, "ok");
+      platforms.reload();
+      if (results) search();
+    } catch (e) {
+      fail(e);
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   useEffect(() => {
     if (settings.data) setMarkup(settings.data.default_markup_pct);
@@ -458,7 +499,7 @@ function AdminPrices({ q: initialQ }: { q: string }) {
               onChanged={search}
               empty={
                 attention
-                  ? { title: "Nothing needs attention", body: "Every fixed price is above NotPanel's cost." }
+                  ? { title: "Nothing needs attention", body: "Every fixed price is above provider cost." }
                   : { title: `No services match “${q.trim()}”`, body: "Try another name or a service ID." }
               }
             />
@@ -471,7 +512,7 @@ function AdminPrices({ q: initialQ }: { q: string }) {
         )}
       </Section>
     ) : (
-      <Section header="Platforms">
+      <Section header="Platforms" action={{ label: syncing ? "Syncing…" : "Sync API", onClick: syncNow }}>
         <Loader res={platforms} skeleton={<SkeletonList rows={6} lead="logo" />}>
           {(rows) =>
             rows.length ? (
@@ -499,10 +540,26 @@ function AdminPrices({ q: initialQ }: { q: string }) {
     <Page
       back="/admin"
       title={attention ? "Hidden services" : "Services & prices"}
-      sub={attention ? "Their fixed price is below NotPanel's cost. Tap one to change its price." : "Sell price = NotPanel cost + markup"}
+      sub={attention ? "Their fixed price is below provider cost. Tap one to change its price." : "Sell price = provider cost + markup"}
       main={dirty ? { text: `Save markup ${pct(markup!)}`, onClick: save, progress: saving } : null}
       overlay={edit ? <ServiceEditSheet s={edit} onClose={() => setEdit(null)} onSaved={() => (setEdit(null), search())} /> : null}
     >
+      {!attention ? (
+        <Section header="API Sync" footer="Fetches all services and prices from provider API.">
+          <List>
+            <Row
+              icon="refill"
+              plate="var(--brand)"
+              title="Sync services from API"
+              meta={syncing ? "Fetching services and updating catalog…" : "Update all services & pricing now"}
+              chevron={false}
+              disabled={syncing}
+              control={syncing ? <span class="spin" style="width: 18px; height: 18px;" /> : undefined}
+              onClick={syncNow}
+            />
+          </List>
+        </Section>
+      ) : null}
       {!attention ? (
         <Section
           header="Default markup"
@@ -627,7 +684,7 @@ function AdminPlatform({ platform }: { platform: string }) {
       {ruleErr ? (
         <ErrorState compact error={ruleErr} onRetry={() => (platforms.reload(), settings.reload())} />
       ) : platforms.data && !p ? (
-        <Notice tone="warn">This platform is no longer in the NotPanel catalog.</Notice>
+        <Notice tone="warn">This platform is no longer in the provider catalog.</Notice>
       ) : (
         rule.body
       )}
@@ -662,9 +719,32 @@ function AdminCategory({ platform, category }: { platform: string; category: str
   const cats = useAsync(() => api<AdminCategoryRow[]>(`/admin/categories?platform=${enc(platform)}`), [platform]);
   const services = usePaged<AdminServiceRow>(`/admin/services?platform=${enc(platform)}&category=${enc(category)}`, 0, "offset");
   const [edit, setEdit] = useState<AdminServiceRow | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const c = cats.data?.find((x) => x.name === category);
   const rule = useRule(platform, category, c, settings.data?.default_markup_pct, () => (cats.reload(), services.reload()));
   const ruleErr = cats.error ?? settings.error;
+
+  const deleteCategory = async () => {
+    if (deleting) return;
+    const ok = await confirmDialog(
+      `Delete category "${category}" and all of its services? This cannot be undone.`,
+      "Delete category",
+      "Cancel",
+      true,
+    );
+    if (!ok) return;
+    setDeleting(true);
+    try {
+      await api(`/admin/categories?platform=${enc(platform)}&category=${enc(category)}`, { method: "DELETE", body: { platform, category } });
+      invalidate();
+      toast(`Category "${category}" deleted`, "ok");
+      navigate(`/admin/prices/${enc(platform)}`, { replace: true });
+    } catch (e) {
+      fail(e);
+      setDeleting(false);
+    }
+  };
+
   return (
     <Page
       back={`/admin/prices/${enc(platform)}`}
@@ -678,7 +758,7 @@ function AdminCategory({ platform, category }: { platform: string; category: str
       {ruleErr ? (
         <ErrorState compact error={ruleErr} onRetry={() => (cats.reload(), settings.reload())} />
       ) : cats.data && !c ? (
-        <Notice tone="warn">This category is no longer in the NotPanel catalog.</Notice>
+        <Notice tone="warn">This category is no longer in the provider catalog.</Notice>
       ) : (
         rule.body
       )}
@@ -693,6 +773,21 @@ function AdminCategory({ platform, category }: { platform: string; category: str
             <ShowMore next={services.next} busy={services.busy} onClick={services.more} />
           </>
         )}
+      </Section>
+      <Section header="Danger zone" footer="Deleting this category permanently removes all its services from your catalog.">
+        <List>
+          <Row
+            danger
+            icon="trash"
+            plate="var(--destructive-bg)"
+            title="Delete this category"
+            meta="Permanently removes this category & its services"
+            chevron={false}
+            disabled={deleting}
+            control={deleting ? <span class="spin" style="width: 18px; height: 18px;" /> : undefined}
+            onClick={deleteCategory}
+          />
+        </List>
       </Section>
     </Page>
   );
@@ -739,7 +834,7 @@ function AdminServiceList({ items, onEdit, onChanged, empty }: { items: AdminSer
                 <Num>#{s.id}</Num>
                 {diff ? (
                   <>
-                    {" · NotPanel price "}
+                    {" · Provider cost "}
                     <Num>{diff}</Num>
                   </>
                 ) : null}
@@ -780,6 +875,7 @@ function ServiceEditSheet({ s, onClose, onSaved }: { s: AdminServiceRow; onClose
   const [fixedErr, setFixedErr] = useState<string | null>(null);
   const [name, setName] = useState(s.customName ?? "");
   const [busy, setBusy] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const fixedStars = Math.floor(Number(fixed) || 0);
   // Rounded down so converting back (rounding up to whole Stars) lands on exactly the Stars typed
   const fixedMicro = rate > 0 ? Math.floor((fixedStars * 1e6) / rate) : 0;
@@ -787,8 +883,30 @@ function ServiceEditSheet({ s, onClose, onSaved }: { s: AdminServiceRow; onClose
   const previewStars = preview === null ? 0 : shownStars(preview, rate);
   const diff = priceDiff(s);
 
+  const deleteService = async () => {
+    if (deleting || busy) return;
+    const ok = await confirmDialog(
+      `Delete service #${s.id} (${s.name})? This service will be permanently removed.`,
+      "Delete service",
+      "Cancel",
+      true,
+    );
+    if (!ok) return;
+    setDeleting(true);
+    try {
+      await api(`/admin/services/${s.id}`, { method: "DELETE" });
+      invalidate();
+      toast(`Service #${s.id} deleted`, "ok");
+      onSaved();
+      onClose();
+    } catch (e) {
+      fail(e);
+      setDeleting(false);
+    }
+  };
+
   const save = async () => {
-    if (busy) return;
+    if (busy || deleting) return;
     if (mode === "fixed" && !(fixedMicro > 0)) {
       haptic.error();
       setFixedErr("Enter a whole number of Stars above 0");
@@ -819,14 +937,26 @@ function ServiceEditSheet({ s, onClose, onSaved }: { s: AdminServiceRow; onClose
       sub={s.name}
       onClose={onClose}
       footer={
-        <button type="button" class="btn" disabled={busy} aria-busy={busy ? "true" : undefined} onClick={save}>
-          {busy ? <span class="spin" aria-hidden="true" /> : null}
-          Save
-        </button>
+        <>
+          <button
+            type="button"
+            class="btn sm danger"
+            style="flex: 0 0 auto; padding: 0 16px;"
+            disabled={busy || deleting}
+            onClick={deleteService}
+          >
+            {deleting ? <span class="spin" aria-hidden="true" /> : <Icon name="trash" size={16} />}
+            Delete
+          </button>
+          <button type="button" class="btn" disabled={busy || deleting} aria-busy={busy ? "true" : undefined} onClick={save}>
+            {busy ? <span class="spin" aria-hidden="true" /> : null}
+            Save
+          </button>
+        </>
       }
     >
       <dl class="card">
-        <Kv label="NotPanel cost">
+        <Kv label="Provider cost">
           <Num>{money(s.cost)}</Num> per 1K{diff ? <> · {diff}</> : null}
         </Kv>
         <Kv label="Sells now">
@@ -836,7 +966,7 @@ function ServiceEditSheet({ s, onClose, onSaved }: { s: AdminServiceRow; onClose
           (≈ <Num>{money(s.sell)}</Num>)
         </Kv>
       </dl>
-      <Field id="svc-name" label="Name shown to customers" value={name} onInput={setName} placeholder={s.name} help="Leave empty to use NotPanel's name." />
+      <Field id="svc-name" label="Name shown to customers" value={name} onInput={setName} placeholder={s.name} help="Leave empty to use original provider name." />
       <Section header="Price">
         <Seg
           label="Price"
@@ -871,7 +1001,7 @@ function ServiceEditSheet({ s, onClose, onSaved }: { s: AdminServiceRow; onClose
           ) : null
         ) : preview < s.cost ? (
           <Notice tone="error">
-            <Num>{starsText(previewStars)}</Num> (≈ <Num>{money(preview)}</Num>) per 1K is below NotPanel's cost of <Num>{money(s.cost)}</Num>. The service will be hidden from customers.
+            <Num>{starsText(previewStars)}</Num> (≈ <Num>{money(preview)}</Num>) per 1K is below provider cost of <Num>{money(s.cost)}</Num>. The service will be hidden from customers.
           </Notice>
         ) : (
           <p class="note">
@@ -901,7 +1031,7 @@ function AdminChanges() {
   const pg = usePaged<PriceChange>(`/admin/price-changes?q=${enc(q.trim())}`, q ? 300 : 0);
   const list = pg.items;
   return (
-    <Page back="/admin" title="Price changes" sub="NotPanel cost changes found by the automatic sync">
+    <Page back="/admin" title="Price changes" sub="Provider cost changes found by the automatic sync">
       <SearchField value={q} onInput={setQ} placeholder="Service name or ID" />
       {pg.err && !list ? (
         <ErrorState error={pg.err} onRetry={pg.reload} />
@@ -1437,7 +1567,7 @@ function AdminOrders() {
           </Chip>
         ))}
       </div>
-      <SearchField value={q} onInput={setQ} placeholder="Order #, NotPanel #, user ID or link" />
+      <SearchField value={q} onInput={setQ} placeholder="Order #, Provider #, user ID or link" />
       {pg.err ? (
         <ErrorState error={pg.err} onRetry={pg.reload} />
       ) : !list ? (
@@ -1458,7 +1588,7 @@ function AdminOrders() {
                       {o.npOrderId ? (
                         <>
                           {" "}
-                          · NotPanel <Num>#{o.npOrderId}</Num>
+                          · Provider <Num>#{o.npOrderId}</Num>
                         </>
                       ) : null}{" "}
                       · {o.userName}
@@ -1502,6 +1632,11 @@ interface AdminSettingsData {
   referral_reward_stars: number;
   referral_daily_cap: number;
   terms_text: string;
+  piprapay_api_url?: string;
+  piprapay_api_key?: string;
+  bdt_per_usd: number;
+  min_topup_bdt: number;
+  max_topup_bdt: number;
   last_sync_at: number;
   last_sync_summary: Overview["lastSync"];
   sync: { running: boolean; page: number; totalPages: number };
@@ -1522,6 +1657,12 @@ function settingProblem(key: string, v: AdminSettingsData): string | null {
   switch (key) {
     case "stars_per_usd":
       return v.stars_per_usd >= 1 && v.stars_per_usd <= 1000 ? null : "Stars per $1 must be between 1 and 1,000.";
+    case "bdt_per_usd":
+      return v.bdt_per_usd >= 1 && v.bdt_per_usd <= 10000 ? null : "BDT per $1 must be between 1 and 10,000.";
+    case "min_topup_bdt":
+    case "max_topup_bdt":
+      if (v.min_topup_bdt < 1) return "Smallest BDT top-up must be at least 1 ৳.";
+      return v.max_topup_bdt >= v.min_topup_bdt ? null : "Largest BDT top-up must be at least the smallest top-up.";
     case "min_topup_stars":
     case "max_topup_stars":
       if (!whole(v.min_topup_stars) || v.min_topup_stars < 1) return "Smallest top-up must be at least 1 ⭐.";
@@ -1547,7 +1688,7 @@ function settingProblem(key: string, v: AdminSettingsData): string | null {
   }
 }
 
-type NumKey = "stars_per_usd" | "min_topup_stars" | "max_topup_stars" | "low_balance" | "referral_reward_stars" | "referral_daily_cap";
+type NumKey = "stars_per_usd" | "min_topup_stars" | "max_topup_stars" | "low_balance" | "referral_reward_stars" | "referral_daily_cap" | "bdt_per_usd" | "min_topup_bdt" | "max_topup_bdt";
 const USD_KEYS: NumKey[] = ["low_balance"];
 
 function AdminSettings() {
@@ -1637,6 +1778,23 @@ function AdminSettings() {
     setConnecting(false);
   };
 
+  const [testingPiprapay, setTestingPiprapay] = useState(false);
+  const testPipraPay = async () => {
+    if (testingPiprapay) return;
+    setTestingPiprapay(true);
+    try {
+      const r = await api<{ ok: boolean; message: string }>("/admin/piprapay/test", { method: "POST" });
+      if (r.ok) {
+        toast("Gateway connection successful! Test charge created.", "ok");
+      } else {
+        toast(r.message || "Gateway connection test failed", "error");
+      }
+    } catch (e) {
+      fail(e);
+    }
+    setTestingPiprapay(false);
+  };
+
   const numInput = (k: NumKey, id: string) => {
     const usd = USD_KEYS.includes(k);
     const shown = texts[k] ?? (usd ? String(s![k] / 1e6) : String(s![k]));
@@ -1697,14 +1855,14 @@ function AdminSettings() {
 
           <Section header="Price sync">
             <List>
-              <Row toggle={{ on: !!s.sync_enabled, onChange: (v) => set("sync_enabled", v ? 1 : 0) }} wrap title="Update prices automatically" meta="Checks NotPanel for new prices and services" />
+              <Row toggle={{ on: !!s.sync_enabled, onChange: (v) => set("sync_enabled", v ? 1 : 0) }} wrap title="Update prices automatically" meta="Checks provider for new prices and services" />
               <Row
                 toggle={{ on: !!s.only_timed, onChange: (v) => set("only_timed", v ? 1 : 0) }}
                 wrap
                 title="Only services with an average time"
-                meta="Lists only services NotPanel has measured delivery times for"
+                meta="Lists only services provider has measured delivery times for"
               />
-              <Row toggle={{ on: !!s.auto_enable_new, onChange: (v) => set("auto_enable_new", v ? 1 : 0) }} wrap title="Put new services on sale" meta="Off: new NotPanel services arrive hidden" />
+              <Row toggle={{ on: !!s.auto_enable_new, onChange: (v) => set("auto_enable_new", v ? 1 : 0) }} wrap title="Put new services on sale" meta="Off: new provider services arrive hidden" />
               {s.sync.running ? (
                 <Row
                   title="Syncing prices…"
@@ -1738,9 +1896,9 @@ function AdminSettings() {
             />
           </Section>
 
-          <Section header="Alerts & support" footer="Admin warns you when your NotPanel balance drops below the alert. The customers' Support button opens the support chat (empty: the bot).">
+          <Section header="Alerts & support" footer="Admin warns you when your provider balance drops below the alert. The customers' Support button opens the support chat (empty: the bot).">
             <dl class="card">
-              <Kv label="Warn when NotPanel balance is below" id="set-low">
+              <Kv label="Warn when provider balance is below" id="set-low">
                 <Num>
                   {"$"}
                   {numInput("low_balance", "set-low")}
@@ -1832,6 +1990,63 @@ function AdminSettings() {
           />
 
           <NotPanelKeySection hint={s.key_hint} source={s.notpanel_key_source} onSaved={(key_hint) => res.set({ ...res.data!, key_hint })} />
+
+          <Section header="MFS / Card / Crypto Gateway (OptimumPay / PipraPay)" footer="Accept bKash, Nagad, Rocket, Cards and Crypto in BDT. Enter your panel API endpoint and API key.">
+            <dl class="card">
+              <Kv label="Gateway API URL" id="set-pipra-url">
+                <input
+                  id="set-pipra-url"
+                  dir="ltr"
+                  autoComplete="off"
+                  autoCapitalize="off"
+                  spellcheck={false}
+                  enterKeyHint="done"
+                  size={24}
+                  value={s.piprapay_api_url ?? ""}
+                  placeholder="https://pay.example.com"
+                  onInput={(e) => set("piprapay_api_url", e.currentTarget.value.trim())}
+                />
+              </Kv>
+              <Kv label="Gateway API Key" id="set-pipra-key">
+                <input
+                  id="set-pipra-key"
+                  dir="ltr"
+                  autoComplete="off"
+                  autoCapitalize="off"
+                  spellcheck={false}
+                  enterKeyHint="done"
+                  size={24}
+                  value={s.piprapay_api_key ?? ""}
+                  placeholder="Paste API Key"
+                  onInput={(e) => set("piprapay_api_key", e.currentTarget.value.trim())}
+                />
+              </Kv>
+              <Kv label="Exchange rate (BDT per $1)" id="set-bdt-rate">
+                <Num>{numInput("bdt_per_usd", "set-bdt-rate")}</Num>
+              </Kv>
+              <Kv label="Smallest top-up (BDT)" id="set-min-bdt">
+                <Num>
+                  {"৳"}
+                  {numInput("min_topup_bdt", "set-min-bdt")}
+                </Num>
+              </Kv>
+              <Kv label="Largest top-up (BDT)" id="set-max-bdt">
+                <Num>
+                  {"৳"}
+                  {numInput("max_topup_bdt", "set-max-bdt")}
+                </Num>
+              </Kv>
+            </dl>
+            <List>
+              <Row
+                accent
+                title={testingPiprapay ? "Testing gateway…" : "Test Gateway Connection"}
+                onClick={testPipraPay}
+                disabled={testingPiprapay || !s.piprapay_api_url || !s.piprapay_api_key}
+                chevron={false}
+              />
+            </List>
+          </Section>
 
           {s.owners ? <AdminsSection owners={s.owners} onChanged={(owners) => res.set({ ...res.data!, owners })} /> : null}
 

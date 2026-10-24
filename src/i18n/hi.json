@@ -265,5 +265,16 @@
   "err.INVALID_AMOUNT": "{min} से {max} के बीच की राशि दर्ज करें।",
   "err.BANNED": "आपका अकाउंट ब्लॉक है।",
   "err.CHANNEL_REQUIRED": "कृपया पहले हमारे अपडेट चैनल से जुड़ें।",
-  "err.UNAUTHORIZED": "कृपया ऐप को Telegram से खोलें।"
+  "err.UNAUTHORIZED": "कृपया ऐप को Telegram से खोलें।",
+  "wallet.mfs": "MFS, Card, Crypto",
+  "wallet.mfsSub": "bKash, Nagad, Rocket, Cards, Binance",
+  "wallet.chooseMethod": "Add funds",
+  "wallet.chooseMethodSub": "Choose how you want to add funds",
+  "topup.methodStars": "Telegram Stars",
+  "topup.methodMfs": "MFS, Card, Crypto",
+  "topup.amountBdt": "Amount in BDT (৳)",
+  "topup.payBdt": "Pay {amount} ৳",
+  "topup.bdtEquivalent": "≈ ${usd} USD ({stars} ⭐ credited to balance)",
+  "topup.mfsNote": "Secure automated checkout via bKash, Nagad, Rocket, Card & Crypto.",
+  "topup.redirecting": "Redirecting to checkout…"
 }

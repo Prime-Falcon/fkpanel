@@ -9,7 +9,7 @@ import { List, Num, Row, Section, Seg, Skeleton, errText, toast } from "../ui";
 import { money, starsText, usdStars } from "./fmt";
 import "./money.css";
 
-export const LEGEND = "Sale = what customers paid minus refunds. Cost = what NotPanel charged you. Profit = Sale − Cost. Margin = Profit ÷ Sale.";
+export const LEGEND = "Sale = what customers paid minus refunds. Cost = what provider charged you. Profit = Sale − Cost. Margin = Profit ÷ Sale.";
 
 /** "23.1%", "−4.0%", or "—" when there is nothing to compare to. */
 export const marginText = (m: number | null): string => (m === null ? "—" : `${m < 0 ? "−" : ""}${Math.abs(m).toFixed(1)}%`);

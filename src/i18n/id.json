@@ -265,5 +265,16 @@
   "err.INVALID_AMOUNT": "Masukkan jumlah dari {min} hingga {max}.",
   "err.BANNED": "Akunmu diblokir.",
   "err.CHANNEL_REQUIRED": "Gabung dulu ke kanal pembaruan kami.",
-  "err.UNAUTHORIZED": "Silakan buka aplikasi dari Telegram."
+  "err.UNAUTHORIZED": "Silakan buka aplikasi dari Telegram.",
+  "wallet.mfs": "MFS, Card, Crypto",
+  "wallet.mfsSub": "bKash, Nagad, Rocket, Cards, Binance",
+  "wallet.chooseMethod": "Add funds",
+  "wallet.chooseMethodSub": "Choose how you want to add funds",
+  "topup.methodStars": "Telegram Stars",
+  "topup.methodMfs": "MFS, Card, Crypto",
+  "topup.amountBdt": "Amount in BDT (৳)",
+  "topup.payBdt": "Pay {amount} ৳",
+  "topup.bdtEquivalent": "≈ ${usd} USD ({stars} ⭐ credited to balance)",
+  "topup.mfsNote": "Secure automated checkout via bKash, Nagad, Rocket, Card & Crypto.",
+  "topup.redirecting": "Redirecting to checkout…"
 }

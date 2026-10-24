@@ -10,6 +10,7 @@ import { useCountUp } from "../motion";
 import { navigate } from "../router";
 import { meStore } from "../store";
 import { haptic } from "../tg";
+import { PaymentMethodSheet } from "../components/PaymentMethodSheet";
 import { EmptyState, ErrorState, LargeTitle, List, Num, Row, Screen, Section, SkeletonList, errText, toast, useAsync } from "../ui";
 
 /** Ledger page size (the API returns 30 per page). */
@@ -65,7 +66,7 @@ function LedgerRow({ item }: { item: LedgerItem }) {
   );
 }
 
-function BalanceCard({ balance: micro }: { balance: number }) {
+function BalanceCard({ balance: micro, onAdd }: { balance: number; onAdd: () => void }) {
   // Stored in micro-USD, shown as whole Stars (rounded down)
   const balance = balanceStars(micro, starsRate());
   // Less than one Star left: "<1 ⭐", not a misleading 0
@@ -87,7 +88,7 @@ function BalanceCard({ balance: micro }: { balance: number }) {
         </b>
         <span class="sr">{balanceText(micro)}</span>
       </div>
-      <button type="button" class="white-pill press" onClick={() => (haptic.tap(), navigate("/topup"))}>
+      <button type="button" class="white-pill press" onClick={() => (haptic.tap(), onAdd())}>
         <Icon name="plus" size={16} stroke={2.6} />
         {t("wallet.add")}
       </button>
@@ -101,6 +102,7 @@ export function Wallet() {
   const [extra, setExtra] = useState<LedgerItem[]>([]);
   const [more, setMore] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [showMethodSheet, setShowMethodSheet] = useState(false);
   const items = [...(res.data?.items ?? []), ...extra];
   const canMore = !!res.data && items.length >= PAGE && more;
 
@@ -119,16 +121,53 @@ export function Wallet() {
   };
 
   const balance = res.data?.balance ?? me.balance;
+  const onAddFunds = () => {
+    if (me.piprapayEnabled) {
+      setShowMethodSheet(true);
+    } else {
+      navigate("/topup");
+    }
+  };
 
   return (
-    <Screen>
+    <Screen overlay={showMethodSheet ? <PaymentMethodSheet onClose={() => setShowMethodSheet(false)} /> : undefined}>
       <LargeTitle title={t("wallet.title")} />
 
-      <BalanceCard balance={balance} />
+      <BalanceCard balance={balance} onAdd={onAddFunds} />
 
       <Section header={t("wallet.addWith")}>
         <List>
-          <Row lead={<StarsTile />} title={t("wallet.stars")} meta={t("wallet.starsSub")} href="/topup" />
+          <Row lead={<StarsTile />} title={t("wallet.stars")} meta={t("wallet.starsSub")} href="/topup?method=stars" />
+          {me.piprapayEnabled ? (
+            <Row
+              lead={
+                <span
+                  class="tile"
+                  style={{
+                    background: "var(--card-sub, #f8fafc)",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    width: 44,
+                    height: 44,
+                    borderRadius: 12,
+                    border: "1px solid var(--border)",
+                    padding: "2px 4px",
+                    overflow: "hidden",
+                  }}
+                >
+                  <img
+                    src="/mfs-gateways.png"
+                    alt="MFS"
+                    style={{ width: "100%", height: "auto", maxHeight: 36, objectFit: "contain", display: "block" }}
+                  />
+                </span>
+              }
+              title={t("wallet.mfs")}
+              meta={t("wallet.mfsSub")}
+              href="/topup?method=mfs"
+            />
+          ) : null}
         </List>
       </Section>
 

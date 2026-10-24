@@ -265,5 +265,16 @@
   "err.INVALID_AMOUNT": "مبلغی از {min} تا {max} وارد کنید.",
   "err.BANNED": "حساب شما مسدود شده است.",
   "err.CHANNEL_REQUIRED": "لطفاً ابتدا به کانال اخبار بپیوندید.",
-  "err.UNAUTHORIZED": "لطفاً برنامه را از داخل Telegram باز کنید."
+  "err.UNAUTHORIZED": "لطفاً برنامه را از داخل Telegram باز کنید.",
+  "wallet.mfs": "MFS, Card, Crypto",
+  "wallet.mfsSub": "bKash, Nagad, Rocket, Cards, Binance",
+  "wallet.chooseMethod": "Add funds",
+  "wallet.chooseMethodSub": "Choose how you want to add funds",
+  "topup.methodStars": "Telegram Stars",
+  "topup.methodMfs": "MFS, Card, Crypto",
+  "topup.amountBdt": "Amount in BDT (৳)",
+  "topup.payBdt": "Pay {amount} ৳",
+  "topup.bdtEquivalent": "≈ ${usd} USD ({stars} ⭐ credited to balance)",
+  "topup.mfsNote": "Secure automated checkout via bKash, Nagad, Rocket, Card & Crypto.",
+  "topup.redirecting": "Redirecting to checkout…"
 }

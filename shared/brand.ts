@@ -102,7 +102,7 @@ export function validHttpsUrl(v: unknown): v is string {
  * NotPanel API keys look like np_live_<hex>. This is only the first gate: the server also checks the key with
  * NotPanel itself (worker/notpanel.ts verifyNotPanelKey) before accepting it. Other panels' keys never pass.
  */
-export const NOTPANEL_KEY_RE = /^np_live_[A-Za-z0-9]{24,64}$/;
+export const NOTPANEL_KEY_RE = /^(?:np_live_[A-Za-z0-9]{24,64}|[a-f0-9]{32}|[A-Za-z0-9]{32,64})$/;
 
 export function looksLikeNotPanelKey(v: unknown): v is string {
   return typeof v === "string" && NOTPANEL_KEY_RE.test(v.trim());

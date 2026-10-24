@@ -15,7 +15,8 @@ import { orderView, type OrderRow } from "../orders";
 import { refundPayment } from "../payments";
 import { sellRate } from "../pricing";
 import { bumpCatalogStmt, DEFAULTS, getSettings, setSettings, setSettingsStmts, type Settings } from "../settings";
-import { startSync, syncProgress } from "../sync";
+import { runImmediateSync, startSync, syncProgress } from "../sync";
+import { testPipraPayConnection } from "../piprapay";
 import { type AppEnv, err, readBody } from "./app";
 
 export const admin = new Hono<AppEnv>();
@@ -113,6 +114,11 @@ const EDITABLE: (keyof Settings)[] = [
   "referral_reward_stars",
   "referral_daily_cap",
   "terms_text",
+  "piprapay_api_url",
+  "piprapay_api_key",
+  "bdt_per_usd",
+  "min_topup_bdt",
+  "max_topup_bdt",
   ...BRAND_KEYS,
 ];
 
@@ -163,12 +169,18 @@ admin.put("/settings", async (c) => {
   if (!inRange("referral_daily_cap", 0, 10000)) return bad("referral_daily_cap");
   if (!inRange("sync_every_hours", 1, 168)) return bad("sync_every_hours");
   if (!inRange("low_balance", 0, Number.MAX_SAFE_INTEGER)) return bad("low_balance");
+  if (!inRange("bdt_per_usd", 1, 10000)) return bad("bdt_per_usd");
+  if (!inRange("min_topup_bdt", 1, 100000)) return bad("min_topup_bdt");
+  if (!inRange("max_topup_bdt", 1, 1000000)) return bad("max_topup_bdt");
   // Top-up limits are compared against the merged current + new values
   const cur = c.get("settings");
   const minTopup = values.min_topup_stars ?? cur.min_topup_stars;
   const maxTopup = values.max_topup_stars ?? cur.max_topup_stars;
   if (!Number.isInteger(minTopup) || minTopup < 1) return bad("min_topup_stars");
   if (!Number.isInteger(maxTopup) || maxTopup < minTopup || maxTopup > MAX_STARS_PER_PAYMENT) return bad("max_topup_stars");
+  const minBdt = values.min_topup_bdt ?? cur.min_topup_bdt;
+  const maxBdt = values.max_topup_bdt ?? cur.max_topup_bdt;
+  if (minBdt > maxBdt) return bad("max_topup_bdt");
   if (values.support_username) values.support_username = values.support_username.replace(/^@/, "");
   if (values.channel_url && !/^https:\/\/t\.me\//.test(values.channel_url)) return err(c, 400, "INVALID_VALUE", { key: "channel_url" });
   if (values.channel_id && !/^-100\d{5,}$/.test(values.channel_id)) return err(c, 400, "INVALID_VALUE", { key: "channel_id" });
@@ -237,8 +249,14 @@ admin.delete("/assets/:kind", async (c) => {
 });
 
 admin.post("/sync", async (c) => {
-  if (!syncProgress(c.get("settings")).running) await startSync(c.env, { force: true });
-  return c.json({ ok: true, ...syncProgress(await getSettings(c.env)) });
+  try {
+    const res = await runImmediateSync(c.env);
+    return c.json({ running: false, ...res });
+  } catch (e) {
+    console.error("Direct sync error, falling back to background:", (e as Error).message);
+    if (!syncProgress(c.get("settings")).running) await startSync(c.env, { force: true });
+    return c.json({ ...syncProgress(await getSettings(c.env)), error: (e as Error).message });
+  }
 });
 
 // ---- Prices: platforms → categories → services ----
@@ -398,6 +416,32 @@ admin.put("/services/:id", async (c) => {
   vals.push(Number(c.req.param("id")));
   await c.env.DB.batch([
     c.env.DB.prepare(`UPDATE services SET ${sets.join(", ")} WHERE id = ?${vals.length}`).bind(...vals),
+    ...rebuildSummaryStmts(c.env, c.get("settings")),
+    bumpCatalogStmt(c.env),
+  ]);
+  return c.json({ ok: true });
+});
+
+admin.delete("/services/:id", async (c) => {
+  const id = Number(c.req.param("id"));
+  if (!Number.isSafeInteger(id) || id <= 0) return err(c, 400, "INVALID_ID");
+  await c.env.DB.batch([
+    c.env.DB.prepare("DELETE FROM services WHERE id = ?1").bind(id),
+    c.env.DB.prepare("DELETE FROM service_names WHERE service_id = ?1").bind(id),
+    ...rebuildSummaryStmts(c.env, c.get("settings")),
+    bumpCatalogStmt(c.env),
+  ]);
+  return c.json({ ok: true });
+});
+
+admin.delete("/categories", async (c) => {
+  const b = await readBody<{ platform?: string; category?: string }>(c);
+  const platform = b?.platform || c.req.query("platform") || "";
+  const category = b?.category || c.req.query("category") || "";
+  if (!platform || !category) return err(c, 400, "INVALID_BODY");
+  await c.env.DB.batch([
+    c.env.DB.prepare("DELETE FROM services WHERE platform = ?1 AND category = ?2").bind(platform, category),
+    c.env.DB.prepare("DELETE FROM category_rules WHERE platform = ?1 AND category = ?2").bind(platform, category),
     ...rebuildSummaryStmts(c.env, c.get("settings")),
     bumpCatalogStmt(c.env),
   ]);
@@ -697,6 +741,13 @@ admin.post("/connect", async (c) => {
   const url = new URL(c.req.url).origin;
   const result = await connectAll(c.env, url);
   return c.json(result);
+});
+
+admin.post("/piprapay/test", async (c) => {
+  const s = c.get("settings");
+  const origin = new URL(c.req.url).origin;
+  const res = await testPipraPayConnection(c.env, s, origin);
+  return c.json(res);
 });
 
 admin.post("/bot-texts/:batch", async (c) => c.json({ next: await syncBotTexts(c.env, Number(c.req.param("batch")) || 0) }));
