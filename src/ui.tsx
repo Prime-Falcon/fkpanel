@@ -6,7 +6,7 @@ import { platformLogo } from "../shared/platforms";
 import { ApiError } from "./api";
 import { prettyLink } from "./format";
 import { t, tErr, type Key } from "./i18n";
-import { Icon, ICON_PATHS, type IconName } from "./icons";
+import { Icon, ICON_PATHS, StarIcon, type IconName } from "./icons";
 import { back, navigate, useRoute } from "./router";
 import { reducedMotion } from "./motion";
 import { createStore, keyboardStore } from "./store";
@@ -419,6 +419,29 @@ export function Seg<T extends string>({ value, options, onChange, label }: { val
   );
 }
 
+export function replaceStarWithIcon(str: string): ComponentChildren {
+  if (!str.includes("⭐")) return str;
+  const parts = str.split("⭐");
+  return parts.map((part, i) => (
+    <span key={i}>
+      {part}
+      {i < parts.length - 1 ? <StarIcon size={16} style={{ marginInlineStart: "3px", marginInlineEnd: "1px", verticalAlign: "-2px" }} /> : null}
+    </span>
+  ));
+}
+
+export function renderNumChildren(children: ComponentChildren): ComponentChildren {
+  if (typeof children === "string") return replaceStarWithIcon(children);
+  if (Array.isArray(children)) {
+    return children.map((c, i) => (
+      <span key={i}>
+        {typeof c === "string" ? replaceStarWithIcon(c) : c}
+      </span>
+    ));
+  }
+  return children;
+}
+
 /** Equal-width pill presets (amounts). Selected = solid cobalt. */
 export function Presets<T extends string | number>({ value, options, onChange, label }: { value: T | null; options: [T, string][]; onChange: (v: T) => void; label: string }) {
   return (
@@ -434,7 +457,7 @@ export function Presets<T extends string | number>({ value, options, onChange, l
             onChange(v);
           }}
         >
-          {l}
+          {renderNumChildren(l)}
         </button>
       ))}
     </div>
@@ -692,11 +715,12 @@ export function PayOption({ on, onClick, title, sub, plate, icon, low }: { on: b
   );
 }
 
+
 /** Money / quantities inside translated text: isolated left-to-right run. */
 export function Num({ children }: { children: ComponentChildren }) {
   return (
     <bdi dir="ltr" class="num">
-      {children}
+      {renderNumChildren(children)}
     </bdi>
   );
 }

@@ -60,14 +60,7 @@ export function Icon({ name, size = 22, stroke = 1.9, class: cls, fill }: { name
   );
 }
 
-/** Telegram Star, filled gold */
-export function StarIcon({ size = 18 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
-      <path d={P.star} fill="#f2a900" stroke="#b67c00" stroke-width="1.2" stroke-linejoin="round" />
-    </svg>
-  );
-}
+export { StarIcon, StarTileEmoji } from "./components/LottieEmoji";
 
 /** Picks a category icon and plate colour from words in the NotPanel category name (cosmetic only). */
 const CAT_RULES: [RegExp, IconName, string][] = [

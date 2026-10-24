@@ -5,7 +5,7 @@ import { ArtBalanceCard } from "../art";
 import { balanceStars, underOneStar } from "../../shared/stars";
 import { amount as amountText, balance as balanceText, dateTime, isoIds, stars, starsRate } from "../format";
 import { t } from "../i18n";
-import { Icon, StarIcon, type IconName } from "../icons";
+import { Icon, StarTileEmoji, type IconName } from "../icons";
 import { useCountUp } from "../motion";
 import { navigate } from "../router";
 import { meStore } from "../store";
@@ -18,21 +18,21 @@ const PAGE = 30;
 /** Balance shown on the last Wallet visit in this app launch. A credit since then counts up from it (spec §7.7). */
 let lastSeenBalance: number | undefined;
 
-/** Leading tile per ledger kind (spec §5.10). No icon = the gold Telegram Stars icon. */
+/** Leading tile per ledger kind (spec §5.10). No icon = the animated Telegram Stars tile icon. */
 const KIND: Record<LedgerItem["kind"], { icon?: IconName; plate: string }> = {
   order: { icon: "receipt", plate: "var(--lavender)" },
   refund: { icon: "refill", plate: "var(--lime)" },
   topup: { plate: "var(--cream)" },
   admin: { icon: "sliders", plate: "var(--sky)" },
   referral: { icon: "users", plate: "var(--lime)" },
-  stars_refund: { icon: "star", plate: "var(--pink)" },
+  stars_refund: { plate: "var(--pink)" },
 };
 
-/** Cream plate with the gold Stars icon. */
+/** Cream plate with the animated Telegram Stars tile icon (ID 6190392129580175284). */
 function StarsTile() {
   return (
     <span class="tile cream">
-      <StarIcon size={18} />
+      <StarTileEmoji size={22} />
     </span>
   );
 }

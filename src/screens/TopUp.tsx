@@ -523,7 +523,7 @@ function TopUpSuccess({ added, oldBalance, paymentId, confirmed, ret }: Done & {
       <div class="card pad new-balance rise" style={at(340)}>
         <span>{t("topup.newBalance")}</span>
         <b class="num-xl count" dir="ltr" aria-hidden="true">
-          {stars(shown)}
+          <Num>{stars(shown)}</Num>
         </b>
         <span class="sr">{stars(now)}</span>
       </div>
