@@ -81,7 +81,7 @@ function BalanceCard({ balance: micro, onAdd }: { balance: number; onAdd: () => 
     <div class="balance-card">
       <ArtBalanceCard />
       <div class="lbl">
-        <span>{t("wallet.balance")}</span>
+        <span class="balance-title">{t("wallet.balance")}</span>
         <b class="num-xl count" aria-hidden="true">
           <Num>{tiny ? balanceText(micro) : stars(shown)}</Num>
         </b>

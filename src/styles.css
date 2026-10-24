@@ -718,11 +718,12 @@ body:has(:is(input, textarea):focus) :is(.tabs, .steps) { transform: translate3d
 .link-btn { min-height: 44px; min-width: 0; padding: 0; max-width: 200px; border: 0; background: transparent; color: var(--acc); font: 400 15px/20px var(--font); }
 
 /* Wallet */
-.balance-card { position: relative; overflow: hidden; isolation: isolate; border-radius: var(--r-hero); background: var(--brand); color: var(--on-brand); padding: 22px 20px; min-height: 142px; display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 14px; box-shadow: var(--shadow-brand); }
+.balance-card { position: relative; overflow: hidden; isolation: isolate; border-radius: var(--r-hero); background: var(--brand); color: var(--on-brand); padding: 22px 20px; min-height: 144px; display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 14px; box-shadow: var(--shadow-brand); }
 .balance-card > .art { position: absolute; top: 0; inset-inline-end: 0; width: 155px; height: 125px; z-index: -1; pointer-events: none; }
-.balance-card .lbl { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
-.balance-card .lbl span { font: 600 16px/22px var(--font); color: var(--on-brand-2); letter-spacing: 0.2px; }
-.balance-card .num-xl { font-size: clamp(38px, 11vw, 46px); line-height: 1.12; letter-spacing: -1.2px; font-weight: 800; }
+.balance-card .lbl { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.balance-card .balance-title { font: 600 16px/22px var(--font); color: var(--on-brand-2); letter-spacing: 0.2px; }
+.balance-card .num-xl { font-size: clamp(42px, 12vw, 52px) !important; line-height: 1.1 !important; letter-spacing: -1.2px; font-weight: 800 !important; color: var(--on-brand) !important; display: inline-flex; align-items: center; }
+.balance-card .num-xl :is(span, bdi) { font-size: inherit !important; font-weight: inherit !important; line-height: inherit !important; font-family: inherit !important; color: inherit !important; }
 
 /* TopUp */
 .amount-card { padding: 16px; display: flex; flex-direction: column; gap: 14px; }

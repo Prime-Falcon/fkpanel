@@ -1,5 +1,5 @@
 // Shared UI primitives (design spec v3, section 3). Screens compose these; they add no CSS of their own.
-import type { ComponentChildren, ComponentType, JSX, Ref } from "preact";
+import { Fragment, type ComponentChildren, type ComponentType, type JSX, type Ref } from "preact";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "preact/hooks";
 import type { OrderStatus } from "../shared/types";
 import { platformLogo } from "../shared/platforms";
@@ -423,19 +423,19 @@ export function replaceStarWithIcon(str: string): ComponentChildren {
   if (!str.includes("⭐")) return str;
   const parts = str.split("⭐");
   return parts.map((part, i) => (
-    <span key={i}>
+    <Fragment key={i}>
       {part}
       {i < parts.length - 1 ? (
         <StarIcon
-          size="1.08em"
+          size="1.15em"
           style={{
-            marginInlineStart: "0.22em",
-            marginInlineEnd: "0.06em",
-            verticalAlign: "-0.14em",
+            marginInlineStart: "0.2em",
+            marginInlineEnd: "0.05em",
+            verticalAlign: "-0.15em",
           }}
         />
       ) : null}
-    </span>
+    </Fragment>
   ));
 }
 
@@ -443,9 +443,9 @@ export function renderNumChildren(children: ComponentChildren): ComponentChildre
   if (typeof children === "string") return replaceStarWithIcon(children);
   if (Array.isArray(children)) {
     return children.map((c, i) => (
-      <span key={i}>
+      <Fragment key={i}>
         {typeof c === "string" ? replaceStarWithIcon(c) : c}
-      </span>
+      </Fragment>
     ));
   }
   return children;
