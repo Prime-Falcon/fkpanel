@@ -13,6 +13,10 @@ export function createStore<T>(initial: T) {
       value = typeof next === "function" ? (next as (v: T) => T)(value) : next;
       listeners.forEach((l) => l());
     },
+    subscribe(fn: Listener): () => void {
+      listeners.add(fn);
+      return () => void listeners.delete(fn);
+    },
     use(): T {
       const [, force] = useState(0);
       useEffect(() => {

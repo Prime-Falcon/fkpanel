@@ -31,13 +31,19 @@ interface BrandingSettings {
   welcome_text: string;
   custom_emoji: string;
   button_icons: string;
+  theme_mode?: "auto" | "light" | "dark";
 }
 
 /** The server may send the two JSON settings as objects or as JSON strings; the page works with strings. */
 async function loadSettings(): Promise<BrandingSettings> {
   const r = await api<Record<string, unknown> & BrandingSettings>("/admin/settings");
   const str = (v: unknown, empty: string) => (typeof v === "string" ? v : v && typeof v === "object" ? JSON.stringify(v) : empty);
-  return { ...r, custom_emoji: str(r.custom_emoji, "{}"), button_icons: str(r.button_icons, "{}") };
+  return {
+    ...r,
+    custom_emoji: str(r.custom_emoji, "{}"),
+    button_icons: str(r.button_icons, "{}"),
+    theme_mode: r.theme_mode === "light" || r.theme_mode === "dark" || r.theme_mode === "auto" ? r.theme_mode : "auto",
+  };
 }
 
 const ICON_FIELDS: [keyof ButtonIcons, string][] = [
@@ -206,11 +212,12 @@ export function AdminBranding() {
   // Live preview: the whole app takes the colors while editing; leaving the page puts the saved ones back.
   const preset = s?.brand_preset ?? saved.preset;
   const accent = s?.brand_accent ?? saved.accent;
+  const themeMode = s?.theme_mode ?? saved.themeMode ?? "auto";
   useEffect(() => {
     if (!s) return;
     if (preset === "custom" && !validHexColor(accent)) return;
-    previewColors(saved, preset, accent);
-  }, [preset, accent, !!s]);
+    previewColors(saved, preset, accent, themeMode);
+  }, [preset, accent, themeMode, !!s]);
   useEffect(() => () => applyBrand(meStore.get()?.brand ?? saved), []);
 
   const problems: Partial<Record<keyof BrandingSettings, string | null>> = s
@@ -367,6 +374,32 @@ export function AdminBranding() {
             {theme.light["--on-brand"] === "#000000" || theme.dark["--on-brand"] === "#000000" ? (
               <Notice tone="plain">This color is light, so buttons use dark text to stay readable.</Notice>
             ) : null}
+          </Section>
+
+          <Section header="App Theme Mode (Day / Night)" footer="Force Day (Light) or Night (Dark) mode for all users, or allow it to follow each user's Telegram and device theme automatically.">
+            <List>
+              <Row
+                radio
+                checked={(s.theme_mode ?? "auto") === "auto"}
+                onClick={() => set("theme_mode", "auto")}
+                title="Automatic (Telegram / System)"
+                meta="Adapts to each user's Telegram Night Mode or device setting"
+              />
+              <Row
+                radio
+                checked={s.theme_mode === "light"}
+                onClick={() => set("theme_mode", "light")}
+                title="Day Theme (Light)"
+                meta="Always show light theme for all users"
+              />
+              <Row
+                radio
+                checked={s.theme_mode === "dark"}
+                onClick={() => set("theme_mode", "dark")}
+                title="Night Theme (Dark)"
+                meta="Always show dark theme for all users"
+              />
+            </List>
           </Section>
 
           <Section header="Links" footer="Both are optional. The website appears as a tile in Profile. If you leave the terms link empty, the terms text from Settings is shown inside the app.">

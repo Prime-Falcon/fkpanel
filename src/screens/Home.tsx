@@ -14,7 +14,6 @@ import { meStore } from "../store";
 import { haptic } from "../tg";
 import { brandStore } from "../theme";
 import { BrandMark, Chip, EmptyState, ErrorState, List, Num, PlatformLogo, Row, Screen, SearchField, Section, SkeletonGrid, SkeletonList, useAsync } from "../ui";
-import { PaymentMethodSheet } from "../components/PaymentMethodSheet";
 import { ServiceRows } from "./Services";
 
 /**
@@ -75,7 +74,6 @@ export function Home() {
   );
   const list = platforms.data ?? (lastPlatforms?.lang === getLang() ? lastPlatforms.items : undefined);
 
-  const [showMethodSheet, setShowMethodSheet] = useState(false);
   const [q, setQ] = useState("");
   const [found, setFound] = useState<Found | null>(null);
   const [retry, setRetry] = useState(0);
@@ -109,7 +107,7 @@ export function Home() {
   const listIn = once(recent.length ? "home-recent" : "home-how");
 
   return (
-    <Screen overlay={showMethodSheet ? <PaymentMethodSheet onClose={() => setShowMethodSheet(false)} /> : undefined}>
+    <Screen>
       <section class="hero-card" aria-label={t("home.title")}>
         <ArtHomeHero enter={once("hero")} />
         <span class="brand">
@@ -133,8 +131,7 @@ export function Home() {
             class="add white-pill press"
             onClick={() => {
               haptic.tap();
-              if (me.piprapayEnabled) setShowMethodSheet(true);
-              else navigate("/topup");
+              navigate("/topup");
             }}
           >
             <Icon name="plus" size={16} stroke={2.6} />

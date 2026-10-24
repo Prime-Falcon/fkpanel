@@ -15,6 +15,8 @@ export interface BrandInfo {
   websiteUrl: string | null;
   /** Terms page: an external https link, or null to show the in-app terms text */
   termsUrl: string | null;
+  /** App theme mode: auto (default), forced light (day) or forced dark (night) */
+  themeMode?: "auto" | "light" | "dark";
 }
 
 /** Public, unauthenticated: what a browser opening the app URL needs (setup wizard / "open in Telegram"). */

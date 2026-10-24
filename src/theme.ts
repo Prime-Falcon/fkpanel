@@ -12,6 +12,7 @@ export const DEFAULT_BRAND: BrandInfo = {
   accent: THEME_PRESETS[0].accent,
   websiteUrl: null,
   termsUrl: null,
+  themeMode: "auto",
 };
 
 const CACHE_BRAND = "np_brand";
@@ -88,9 +89,9 @@ export function applyBrand(b: BrandInfo, opts: { persist?: boolean } = {}) {
   }
 }
 
-/** Live preview of colors only (admin Branding page). Call applyBrand(savedBrand) to go back. */
-export function previewColors(base: BrandInfo, preset: string, accent: string) {
-  applyBrand({ ...base, preset, accent }, { persist: false });
+/** Live preview of colors and theme (admin Branding page). Call applyBrand(savedBrand) to go back. */
+export function previewColors(base: BrandInfo, preset: string, accent: string, themeMode?: "auto" | "light" | "dark") {
+  applyBrand({ ...base, preset, accent, ...(themeMode ? { themeMode } : {}) }, { persist: false });
 }
 
 // First paint: index.html already injected the cached CSS; make sure stores, title and favicon agree.

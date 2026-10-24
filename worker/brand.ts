@@ -9,6 +9,7 @@ export const brandName = (s: Pick<Settings, "brand_name">): string => s.brand_na
 
 export function brandInfo(s: Settings): BrandInfo {
   const preset = s.brand_preset === "custom" || PRESET_IDS.has(s.brand_preset) ? s.brand_preset : DEFAULT_PRESET;
+  const themeMode = s.theme_mode === "light" || s.theme_mode === "dark" || s.theme_mode === "auto" ? s.theme_mode : "auto";
   return {
     name: brandName(s),
     logoUrl: s.logo_ver > 0 ? `/media/logo?v=${s.logo_ver}` : null,
@@ -16,6 +17,7 @@ export function brandInfo(s: Settings): BrandInfo {
     accent: validHexColor(s.brand_accent) ? s.brand_accent : "#2457ff",
     websiteUrl: validHttpsUrl(s.website_url) ? s.website_url : null,
     termsUrl: validHttpsUrl(s.terms_url) ? s.terms_url : null,
+    themeMode,
   };
 }
 

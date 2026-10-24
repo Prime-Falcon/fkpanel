@@ -44,6 +44,7 @@ export const DEFAULTS = {
   brand_accent: "#2457ff", // used when brand_preset is "custom"
   website_url: "",
   terms_url: "", // "" = the in-app terms text
+  theme_mode: "auto", // "auto" | "light" | "dark"
   welcome_text: "", // "" = the built-in translated welcome; {name} and {brand} are replaced
   custom_emoji: "{}", // JSON map: plain emoji -> Telegram custom emoji id (needs the bot owner's Premium)
   button_icons: '{"open":"","viewOrder":"","terms":"","invite":""}', // JSON ButtonIcons

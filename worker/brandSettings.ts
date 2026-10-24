@@ -2,7 +2,7 @@
 import { LIMITS, PRESET_IDS, validBrandName, validButtonIcons, validCustomEmojiMap, validHexColor, validHttpsUrl } from "../shared/brand";
 import type { Settings } from "./settings";
 
-export const BRAND_KEYS = ["brand_name", "brand_preset", "brand_accent", "website_url", "terms_url", "welcome_text", "custom_emoji", "button_icons"] as const;
+export const BRAND_KEYS = ["brand_name", "brand_preset", "brand_accent", "website_url", "terms_url", "welcome_text", "custom_emoji", "button_icons", "theme_mode"] as const;
 
 const WELCOME_BAD_CHARS = /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/;
 
@@ -18,6 +18,7 @@ export function normalizeBrandSettings(values: Partial<Settings>): string | null
   }
   if (v.brand_preset !== undefined && v.brand_preset !== "custom" && !PRESET_IDS.has(v.brand_preset)) return "brand_preset";
   if (v.brand_accent !== undefined && !validHexColor(v.brand_accent)) return "brand_accent";
+  if (v.theme_mode !== undefined && !["auto", "light", "dark"].includes(v.theme_mode)) return "theme_mode";
   for (const k of ["website_url", "terms_url"] as const) {
     if (v[k] === undefined) continue;
     v[k] = v[k]!.trim();

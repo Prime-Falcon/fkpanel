@@ -48,9 +48,18 @@ type Done = { added: number; oldBalance: number; paymentId: number; confirmed: b
 
 /** Add funds with Telegram Stars or MFS / Card / Crypto (OptimumPay / PipraPay). */
 export function TopUp() {
+  const me = meStore.use()!;
   const { query } = useRoute();
   const ret = safeRet(query.get("ret"));
-  const initialMethod = query.get("method") === "mfs" ? "mfs" : "stars";
+  const methodParam = query.get("method");
+  const initialMethod =
+    methodParam === "stars"
+      ? "stars"
+      : methodParam === "mfs"
+      ? "mfs"
+      : me.piprapayEnabled
+      ? "mfs"
+      : "stars";
   const [method, setMethod] = useState<"stars" | "mfs">(initialMethod);
   const [done, setDone] = useState<Done | null>(null);
 
@@ -168,8 +177,8 @@ function TopUpStarsForm({
             value={method}
             onChange={onMethodChange}
             options={[
-              ["stars", t("topup.methodStars")],
               ["mfs", t("topup.methodMfs")],
+              ["stars", t("topup.methodStars")],
             ]}
           />
         </div>
@@ -344,8 +353,8 @@ function TopUpMfsForm({
           value={method}
           onChange={onMethodChange}
           options={[
-            ["stars", t("topup.methodStars")],
             ["mfs", t("topup.methodMfs")],
+            ["stars", t("topup.methodStars")],
           ]}
         />
       </div>

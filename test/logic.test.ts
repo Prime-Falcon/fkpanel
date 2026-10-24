@@ -412,6 +412,7 @@ describe("branding settings validation", () => {
       accent: "#2457ff",
       websiteUrl: null,
       termsUrl: null,
+      themeMode: "auto",
     });
     expect(brandInfo({ ...DEFAULTS, logo_ver: -2 }).logoUrl).toBeNull();
   });

@@ -1,7 +1,6 @@
-// Thin wrapper over window.Telegram.WebApp. Everything degrades gracefully in a normal browser (local dev).
 import { useEffect, useRef } from "preact/hooks";
 import { createStore } from "./store";
-import { themeStore } from "./theme";
+import { brandStore, themeStore } from "./theme";
 
 interface BottomButton {
   setParams(p: Record<string, unknown>): BottomButton;
@@ -63,6 +62,9 @@ const atLeast = (v: string) => !!webApp && webApp.isVersionAtLeast(v);
 export const hasSecondaryButton = atLeast("7.10") && !!webApp?.SecondaryButton;
 
 export function isDark(): boolean {
+  const mode = brandStore.get()?.themeMode;
+  if (mode === "dark") return true;
+  if (mode === "light") return false;
   if (webApp) return webApp.colorScheme === "dark";
   return matchMedia("(prefers-color-scheme: dark)").matches;
 }
@@ -85,6 +87,8 @@ function applyTheme() {
     /* older clients */
   }
 }
+
+brandStore.subscribe(applyTheme);
 
 export function initTelegram() {
   // Drop Telegram's launch params from the hash (the SDK has already read them). Keep the router's history state.
