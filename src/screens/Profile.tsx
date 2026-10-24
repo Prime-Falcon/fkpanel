@@ -212,7 +212,7 @@ export function Profile() {
           />
         ) : null}
         <Row icon="chat" plate="var(--sky)" title={t("profile.support")} onClick={support} external />
-        <Row icon="doc" plate="var(--lavender)" title={t("profile.terms")} onClick={() => (openExternalTerms() ? undefined : setSheet("terms"))} external={!!brand.termsUrl} />
+        <Row icon="doc" plate="var(--lavender-strong)" title={t("profile.terms")} onClick={() => (openExternalTerms() ? undefined : setSheet("terms"))} external={!!brand.termsUrl} />
       </List>
 
       {me.isAdmin ? (
