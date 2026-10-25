@@ -183,7 +183,7 @@ admin.put("/settings", async (c) => {
   if (minBdt > maxBdt) return bad("max_topup_bdt");
   if (values.support_username) values.support_username = values.support_username.replace(/^@/, "");
   if (values.channel_url && !/^https:\/\/t\.me\//.test(values.channel_url)) return err(c, 400, "INVALID_VALUE", { key: "channel_url" });
-  if (values.channel_id && !/^-100\d{5,}$/.test(values.channel_id)) return err(c, 400, "INVALID_VALUE", { key: "channel_id" });
+  if (values.channel_id && !/^(?:-100\d{5,}|@[A-Za-z0-9_]{3,})$/.test(values.channel_id)) return err(c, 400, "INVALID_VALUE", { key: "channel_id" });
   const badBrand = normalizeBrandSettings(values);
   if (badBrand) return bad(badBrand);
   await c.env.DB.batch([...setSettingsStmts(c.env, values), bumpCatalogStmt(c.env)]);

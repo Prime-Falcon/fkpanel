@@ -42,7 +42,7 @@ export async function setLang(code: string | null | undefined) {
   langStore.set({ lang, dict });
 }
 
-let uiBrand = "NotBot";
+let uiBrand = "fpanel";
 
 /** Sets the brand name that fills {brand} in every UI text; re-renders anything using useLang(). */
 export function setUiBrand(name: string) {

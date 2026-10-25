@@ -6,7 +6,7 @@ import { type Env, isOwner } from "../env";
 import { MAX_STARS_PER_PAYMENT, starsToCover } from "../../shared/stars";
 import { starsText } from "../botMessages";
 import { botPlain } from "../i18n";
-import { cancelOrder, getOrderRow, OrderError, orderView, placeOrder, refillOrder, refreshOrder, type OrderRow } from "../orders";
+import { cancelOrder, getOrderRow, notifyOrderPlaced, OrderError, orderView, placeOrder, refillOrder, refreshOrder, type OrderRow } from "../orders";
 import { createInvoice, TooManyInvoices } from "../payments";
 import { attachReferral, channelGateRequired, onHomeReached, parseRef, referralStats, RetryLater, rewardStars, verifyChannel } from "../growth";
 import { checkDraft, orderCharge } from "../pricing";
@@ -290,6 +290,7 @@ app.post("/orders", async (c) => {
       return c.json({ invoice: inv.link, stars: inv.stars, paymentId: inv.paymentId, charge });
     }
     const o = await placeOrder(c.env, c.get("user").id, svc, link, check.quantity, check.fields, draft.dripMinutes);
+    c.executionCtx.waitUntil(notifyOrderPlaced(c.env, o).catch((e) => console.warn("notifyOrderPlaced failed", e)));
     return c.json({ order: orderView(o) });
   } catch (e) {
     return orderErr(c, e);

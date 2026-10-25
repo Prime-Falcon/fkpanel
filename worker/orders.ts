@@ -119,7 +119,7 @@ function assertOrdersAllowed(env: Env): void {
 function shopSafeError(env: Env, e: NotPanelError): OrderError {
   if (SHOP_SIDE.has(e.code)) {
     console.error("NotPanel shop-side error", e.code, e.message);
-    void alertAdmins(env, "notpanel", `NotPanel refused a request: <b>${e.code}</b>. Check your NotPanel account and API key.`);
+    void alertAdmins(env, "notpanel", `Provider refused a request: <b>${e.code}</b>. Check your provider account and API key.`);
     return new OrderError("SERVICE_UNAVAILABLE", undefined);
   }
   return new OrderError(e.code, e.details);
@@ -209,7 +209,7 @@ export async function placeOrder(
       await failOrder(env, id, shop ? "SERVICE_UNAVAILABLE" : e.code);
       if (shop) {
         console.error("NotPanel shop-side error", e.code, e.message);
-        await alertAdmins(env, "notpanel", `NotPanel refused an order: <b>${e.code}</b>${e.code === "INSUFFICIENT_BALANCE" ? " (your NotPanel balance is too low; top it up on notpanel.com)" : ""}. Customers can't order until this is fixed; their money was refunded to their balance.`);
+        await alertAdmins(env, "notpanel", `Provider refused an order: <b>${e.code}</b>${e.code === "INSUFFICIENT_BALANCE" ? " (your provider balance is too low; top it up on avirah.com.bd)" : ""}. Customers can't order until this is fixed; their money was refunded to their balance.`);
       }
       // Supplier details are never shown to users
       throw new OrderError(shop ? "SERVICE_UNAVAILABLE" : e.code, shop ? undefined : e.details);
@@ -348,6 +348,40 @@ export async function notifyOrder(env: Env, o: OrderRow): Promise<void> {
     // 403 = the user blocked the bot; stop trying
     if (String((e as Error).message).includes("403")) await env.DB.prepare("UPDATE users SET can_message = 0 WHERE id = ?1").bind(o.user_id).run();
     else console.warn("notify failed", (e as Error).message);
+  }
+}
+
+/** Sends "order placed" notification to the user's Telegram chat. */
+export async function notifyOrderPlaced(env: Env, o: OrderRow): Promise<void> {
+  const user = await env.DB.prepare("SELECT notify, can_message, lang, language_code FROM users WHERE id = ?1")
+    .bind(o.user_id)
+    .first<{ notify: number; can_message: number; lang: string | null; language_code: string | null }>();
+  if (user && user.can_message === 0) return;
+  const s = await getSettings(env);
+  if (!s.app_url) return;
+  const lang: Lang = pickLang(user?.lang ?? user?.language_code);
+  const text = botText(lang, "orderPlaced", {
+    id: String(o.np_order_id ?? o.id),
+    service: o.service_name,
+    quantity: o.quantity.toLocaleString("en-US"),
+    link: linkText(o.link),
+  });
+  try {
+    await tg(env.BOT_TOKEN, "sendMessage", {
+      chat_id: o.user_id,
+      text,
+      parse_mode: "HTML",
+      link_preview_options: { is_disabled: true },
+      reply_markup: {
+        inline_keyboard: [[webAppButton(botText(lang, "viewOrder"), `${s.app_url}/#/order/${o.id}`, "viewOrder")]],
+      },
+    });
+  } catch (e) {
+    if (String((e as Error).message).includes("403")) {
+      await env.DB.prepare("UPDATE users SET can_message = 0 WHERE id = ?1").bind(o.user_id).run();
+    } else {
+      console.warn("notifyOrderPlaced failed", (e as Error).message);
+    }
   }
 }
 

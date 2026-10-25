@@ -104,7 +104,7 @@ describe("brand placeholder", () => {
     expect(botText("en", "cmdStart")).toBe("Open A&amp;B");
     expect(botPlain("en", "cmdStart")).toBe("Open A&B");
     expect(botPlain("en", "cmdStart", { brand: "X" })).toBe("Open X");
-    setBotBrand("NotBot");
+    setBotBrand("fpanel");
   });
 });
 

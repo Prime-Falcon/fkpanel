@@ -16,11 +16,31 @@ export type ChannelCheck = "member" | "not_member" | "unavailable";
 /** Telegram asked us to slow down: the user should simply try again (never treated as "let in"). */
 export class RetryLater extends Error {}
 
+/** Resolves the channel target from settings: s.channel_id if set, else extract @channel from s.channel_url */
+export function targetChannel(s: Settings): string {
+  if (s.channel_id && s.channel_id.trim()) return s.channel_id.trim();
+  if (s.channel_url) {
+    const m = /(?:t\.me\/|@)([A-Za-z0-9_]+)/i.exec(s.channel_url);
+    if (m && m[1]) return `@${m[1]}`;
+  }
+  return "";
+}
+
 /** Asks Telegram whether the user is in the update channel. "unavailable" = Telegram couldn't answer (bot not admin, wrong id…). */
 export async function checkChannel(env: Env, s: Settings, userId: number): Promise<ChannelCheck> {
-  if (!s.channel_id) return "unavailable";
+  const target = targetChannel(s);
+  if (!target) return "unavailable";
   try {
-    const m = await tg<{ status: string; is_member?: boolean }>(env.BOT_TOKEN, "getChatMember", { chat_id: s.channel_id, user_id: userId });
+    const m = await tg<{ status: string; is_member?: boolean }>(env.BOT_TOKEN, "getChatMember", { chat_id: target, user_id: userId });
+    if (!s.channel_id && target.startsWith("@")) {
+      tg<{ id: number }>(env.BOT_TOKEN, "getChat", { chat_id: target })
+        .then(async (chat) => {
+          if (chat?.id) {
+            await env.DB.prepare("INSERT INTO settings (key, value) VALUES ('channel_id', ?1) ON CONFLICT(key) DO UPDATE SET value = ?1").bind(String(chat.id)).run();
+          }
+        })
+        .catch(() => {});
+    }
     return MEMBER.has(m.status) || (m.status === "restricted" && m.is_member) ? "member" : "not_member";
   } catch (e) {
     const msg = (e as Error).message;
@@ -61,8 +81,25 @@ export async function channelGateRequired(
   u: GateUser,
   opts: { background?: (p: Promise<unknown>) => void } = {},
 ): Promise<boolean> {
-  if (!s.channel_gate || !s.channel_id || isOwner(env, s, u.id)) return false;
+  const target = targetChannel(s);
+  if (!s.channel_gate || !target) return false;
   const now = Math.floor(Date.now() / 1000);
+
+  if (isOwner(env, s, u.id)) {
+    if (u.channel_ok === MEMBER_OK && u.channel_checked_at && now - u.channel_checked_at < DAY) {
+      return false;
+    }
+    const r = await checkChannel(env, s, u.id).catch(() => "unavailable" as const);
+    if (r === "member") {
+      await env.DB.prepare("UPDATE users SET channel_ok = ?2, channel_checked_at = ?3 WHERE id = ?1").bind(u.id, MEMBER_OK, now).run();
+      u.channel_ok = MEMBER_OK;
+      u.channel_checked_at = now;
+      return false;
+    }
+    if (r === "unavailable") return false;
+    return true;
+  }
+
   if (u.channel_ok === NOT_CONFIRMED) return true;
   // Member, or let through while Telegram was unavailable: re-check once a day
   if (u.channel_checked_at && now - u.channel_checked_at < DAY) return false;
@@ -172,7 +209,7 @@ export async function payReferral(
   // A reward needs a Telegram-confirmed membership. If the join step didn't confirm it (gate off, or Telegram was
   // unavailable at Verify), ask Telegram now. Unconfirmed referrals are retried by the cron (retryReferrals).
   if (ref.channel_ok !== MEMBER_OK) {
-    if (!s.channel_id) return "skip";
+    if (!targetChannel(s)) return "skip";
     const r = await checkChannel(env, s, userId).catch(() => "unavailable" as const);
     if (r !== "member") return r;
     await env.DB.prepare("UPDATE users SET channel_ok = 1, channel_checked_at = ?2 WHERE id = ?1").bind(userId, now).run();
@@ -213,7 +250,7 @@ const RETRY_FOR = 30 * DAY; // stop asking after a month
  */
 export async function retryReferrals(env: Env): Promise<void> {
   const s = await getSettings(env);
-  if (!s.referral_enabled || !s.channel_id || s.sync_state) return;
+  if (!s.referral_enabled || !targetChannel(s) || s.sync_state) return;
   const now = Math.floor(Date.now() / 1000);
   const { results } = await env.DB.prepare(
     `SELECT r.referred_id FROM referrals r JOIN users u ON u.id = r.referred_id

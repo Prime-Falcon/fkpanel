@@ -203,4 +203,4 @@ const aboutTemplates: Record<Lang, { name: (b: string) => string; short: string;
 };
 
 /** @deprecated use botAboutFor(brand); kept so older callers still compile. */
-export const BOT_ABOUT = botAboutFor("NotBot");
+export const BOT_ABOUT = botAboutFor("fpanel");

@@ -404,7 +404,7 @@ describe("branding settings validation", () => {
   it("builds BrandInfo with safe fallbacks", async () => {
     const { brandInfo, brandName } = await import("../worker/brand");
     const { DEFAULTS } = await import("../worker/settings");
-    expect(brandName(DEFAULTS)).toBe("NotBot");
+    expect(brandName(DEFAULTS)).toBe("fpanel");
     expect(brandInfo({ ...DEFAULTS, brand_name: "Rocket", logo_ver: 3, website_url: "http://bad", brand_preset: "neon" })).toEqual({
       name: "Rocket",
       logoUrl: "/media/logo?v=3",

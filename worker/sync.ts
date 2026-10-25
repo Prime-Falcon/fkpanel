@@ -261,7 +261,7 @@ export async function syncTick(env: Env): Promise<void> {
 /** End of a run: retire services NotPanel no longer lists, rebuild browse lists, save the summary. */
 async function finish(env: Env, s: Settings, stats: SyncStats, state: SyncState | null): Promise<void> {
   const now = Math.floor(Date.now() / 1000);
-  if (stats.error) await alertAdmins(env, "sync", `The price and service sync with NotPanel failed: <b>${stats.error.replace(/[<>&]/g, "")}</b>. Prices stay as they were; it retries on schedule. If it keeps failing, check your NotPanel API key.`);
+  if (stats.error) await alertAdmins(env, "sync", `The price and service sync with provider failed: <b>${stats.error.replace(/[<>&]/g, "")}</b>. Prices stay as they were; it retries on schedule. If it keeps failing, check your provider API key.`);
   const stmts: D1PreparedStatement[] = [];
   if (state && !stats.error) {
     const { n } = (await env.DB.prepare("SELECT COUNT(*) AS n FROM services WHERE present = 1").first<{ n: number }>())!;

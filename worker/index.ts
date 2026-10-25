@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { LANGS, pickLang } from "../shared/types";
 import { timingSafeEqual } from "./auth";
 import { sendPreviews } from "./botMessages";
-import { checkChannel, retryReferrals } from "./growth";
+import { checkChannel, retryReferrals, targetChannel } from "./growth";
 import { connectAll, syncBotTexts } from "./connect";
 import { ownerIds } from "./env";
 import { mediaResponse } from "./assets";
@@ -85,9 +85,11 @@ app.get("/setup/:secret/channel", async (c) => {
   if (!setupOk(c.env, c.req.param("secret"))) return c.text("Not found", 404);
   const s = await getSettings(c.env, { fresh: true });
   try {
-    const chat = await tg<{ id: number; title: string; type: string }>(c.env.BOT_TOKEN, "getChat", { chat_id: s.channel_id });
+    const target = targetChannel(s);
+    if (!target) return c.json({ ok: false, error: "Channel not configured" }, 400);
+    const chat = await tg<{ id: number; title: string; type: string }>(c.env.BOT_TOKEN, "getChat", { chat_id: target });
     const me = await tg<{ id: number }>(c.env.BOT_TOKEN, "getMe");
-    const bot = await tg<{ status: string }>(c.env.BOT_TOKEN, "getChatMember", { chat_id: s.channel_id, user_id: me.id });
+    const bot = await tg<{ status: string }>(c.env.BOT_TOKEN, "getChatMember", { chat_id: target, user_id: me.id });
     const owners = ownerIds(c.env, s);
     const ownerCheck = owners.length ? await checkChannel(c.env, s, owners[0]) : null;
     return c.json({ ok: true, channel: { id: chat.id, title: chat.title, type: chat.type }, botStatus: bot.status, ownerMembership: ownerCheck });

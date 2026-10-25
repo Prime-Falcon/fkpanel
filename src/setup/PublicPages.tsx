@@ -30,11 +30,11 @@ function problem(e: unknown, where: "token" | "key" | "run" | "other" = "other")
     case "TOO_MANY_ATTEMPTS":
       return "Too many wrong tokens from this network. Try again in an hour.";
     case "NOT_NOTPANEL_KEY":
-      return "This isn't a NotPanel API key." + (d ? ` ${d}` : "");
+      return "This isn't a valid provider API key." + (d ? ` ${d}` : "");
     case "NOTPANEL_REJECTED":
-      return d || "NotPanel didn't accept this key. Check that you copied all of it and that the key is active.";
+      return d || "Provider didn't accept this key. Check that you copied all of it and that the key is active.";
     case "NOTPANEL_REQUIRED":
-      return "Add a NotPanel API key first.";
+      return "Add a provider API key first.";
     case "SETUP_DONE":
       return "Setup is already finished. Open your bot in Telegram and use the admin panel (Profile, then Admin).";
     case "INVALID_SETUP_TOKEN":
@@ -287,7 +287,7 @@ function KeyStep({ status, call, onStatus, onExpired }: { status: SetupStatus; c
     if (busy) return;
     const key = value.trim();
     if (!looksLikeNotPanelKey(key)) {
-      setErr("This isn't a NotPanel API key. NotPanel keys start with np_live_. Copy it again from your notpanel.com account.");
+      setErr("This isn't a valid provider API key. Copy it again from your provider account.");
       return;
     }
     setBusy(true);
@@ -304,15 +304,15 @@ function KeyStep({ status, call, onStatus, onExpired }: { status: SetupStatus; c
 
   return (
     <Screen bottom="none" class="onboard">
-      <Hero step={2} title="Connect NotPanel" sub={status.botUsername ? `@${status.botUsername} is verified. Next, the account that fulfils your orders.` : "Next, the account that fulfils your orders."} />
+      <Hero step={2} title="Connect Provider" sub={status.botUsername ? `@${status.botUsername} is verified. Next, the account that fulfils your orders.` : "Next, the account that fulfils your orders."} />
       {status.notpanelError ? <Notice tone="warn">{status.notpanelError}</Notice> : null}
       <form class="setup-form" onSubmit={submit}>
         <div class="card pad setup-how">
           <ol>
             <li>
               Create a free account on{" "}
-              <a href="https://notpanel.com" target="_blank" rel="noopener">
-                notpanel.com
+              <a href="https://avirah.com.bd" target="_blank" rel="noopener">
+                avirah.com.bd
               </a>
               .
             </li>
@@ -320,7 +320,7 @@ function KeyStep({ status, call, onStatus, onExpired }: { status: SetupStatus; c
             <li>Paste the key below. You can change it later in the admin panel.</li>
           </ol>
         </div>
-        <Field id="setup-key" label="NotPanel API key" type="password" lead="plug" value={value} onInput={(v) => (setValue(v), setErr(null))} placeholder="np_live_..." error={err} help="Only NotPanel keys work here." enterKeyHint="go" dir="ltr" />
+        <Field id="setup-key" label="Provider API key" type="password" lead="plug" value={value} onInput={(v) => (setValue(v), setErr(null))} placeholder="API key..." error={err} help="Only valid provider keys work here." enterKeyHint="go" dir="ltr" />
         <button type="submit" class="btn" disabled={busy || !value.trim()} aria-busy={busy ? "true" : undefined}>
           {busy ? <span class="spin" aria-hidden="true" /> : null}
           Check and save key

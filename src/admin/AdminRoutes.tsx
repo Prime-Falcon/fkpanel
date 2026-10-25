@@ -63,7 +63,7 @@ export function AdminRoutes({ parts, query }: { parts: string[]; query: URLSearc
 
 // ---------------- helpers ----------------
 
-const NP_WALLET = "https://notpanel.com/dashboard/wallet";
+const NP_WALLET = "https://avirah.com.bd";
 const MAX_MARKUP = 1000;
 const ONE_USD = 1_000_000;
 
@@ -1682,7 +1682,7 @@ function settingProblem(key: string, v: AdminSettingsData): string | null {
     case "channel_url":
       return !v.channel_url || /^https:\/\/t\.me\//.test(v.channel_url) ? null : "Channel link must start with https://t.me/";
     case "channel_id":
-      return !v.channel_id || /^-100\d{5,}$/.test(v.channel_id) ? null : "Channel ID must look like -1001234567890.";
+      return !v.channel_id || /^(?:-100\d{5,}|@[A-Za-z0-9_]{3,})$/.test(v.channel_id) ? null : "Channel ID must look like -1001234567890 or @channelname.";
     default:
       return null;
   }
@@ -1769,8 +1769,8 @@ function AdminSettings() {
       const r = await api<{ bot: string; notpanelWebhook: true | string }>("/admin/connect", { method: "POST" });
       // Command menu, About text and description in every language, in batches
       for (let batch: number | null = 0; batch !== null; ) batch = (await api<{ next: number | null }>(`/admin/bot-texts/${batch}`, { method: "POST" })).next;
-      if (r.notpanelWebhook === true) toast(`Connected @${r.bot} and NotPanel updates`, "ok");
-      else toast(`Bot connected; NotPanel webhook: ${r.notpanelWebhook}`);
+      if (r.notpanelWebhook === true) toast(`Connected @${r.bot} and fpanel updates`, "ok");
+      else toast(`Bot connected; fpanel webhook: ${r.notpanelWebhook}`);
       res.reload();
     } catch (e) {
       fail(e);
@@ -2061,7 +2061,7 @@ function AdminSettings() {
               </Kv>
             </dl>
             <List>
-              <Row accent title={connecting ? "Reconnecting…" : "Reconnect bot & NotPanel updates"} onClick={reconnect} disabled={connecting} chevron={false} />
+              <Row accent title={connecting ? "Reconnecting…" : "Reconnect bot & fpanel updates"} onClick={reconnect} disabled={connecting} chevron={false} />
               <Row
                 accent
                 title={previewing ? "Sending previews…" : "Preview bot messages"}

@@ -95,7 +95,7 @@ const en = {
 export type BotKey = keyof typeof en;
 const all = bot as Partial<Record<Lang, Partial<Record<BotKey, string>>>>;
 
-let botBrand = "NotBot";
+let botBrand = "fpanel";
 
 /** Sets the brand name that fills {brand} in every bot text (call whenever settings load). */
 export function setBotBrand(name: string) {
