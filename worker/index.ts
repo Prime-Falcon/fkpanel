@@ -35,6 +35,7 @@ app.use("*", async (c, next) => {
 
 /** /setup routes only exist when SETUP_SECRET is set, and only answer to that exact secret. */
 const setupOk = (env: Env, given: string) => !!env.SETUP_SECRET && timingSafeEqual(given, env.SETUP_SECRET);
+
 // Public + first-run setup endpoints answer before the Telegram-authenticated /api app sees the request
 app.route("/api", pub);
 app.route("/api/setup", setup);
