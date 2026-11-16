@@ -1,3 +1,4 @@
+// Maintained & customized by Ashraful Zaman — https://www.avirah.com.bd
 import { render } from "preact";
 import "./styles.css";
 import "./art"; // registers the empty-state art with ui.tsx

@@ -1,3 +1,4 @@
+// Maintained & customized by Ashraful Zaman — https://www.avirah.com.bd
 import { FINAL_STATUSES, type Lang, type OrderStatus, type OrderView, pickLang } from "../shared/types";
 import type { Env } from "./env";
 import { botText } from "./i18n";
@@ -92,7 +93,7 @@ export class OrderError extends Error {
   }
 }
 
-/** NotPanel error codes that mean "your shop can't sell this right now" rather than "you typed something wrong". */
+/** fpanel error codes that mean "your shop can't sell this right now" rather than "you typed something wrong". */
 const SHOP_SIDE = new Set(["INSUFFICIENT_BALANCE", "ORDER_PLACEMENT_PAUSED", "API_DISABLED", "INVALID_KEY", "INACTIVE_ACCOUNT", "EMAIL_UNVERIFIED"]);
 
 /** Keys the caller must never be able to set through user-supplied form fields. */
@@ -101,13 +102,13 @@ const RESERVED_PARAMS = new Set([
   "drip_feed_total_minutes", "orders", "order",
 ]);
 
-/** Dev and production share one NotPanel account, so their idempotency keys must not collide. */
+/** Dev and production share one fpanel account, so their idempotency keys must not collide. */
 function requestId(env: Env, id: number): string {
   return `${env.DEV_FAKE_USER_ID ? "dev" : "o"}${id}`;
 }
 
 /**
- * Safety guard: a local dev setup (DEV_FAKE_USER_ID set) uses the live NotPanel key, so it must not place, cancel or
+ * Safety guard: a local dev setup (DEV_FAKE_USER_ID set) uses the live fpanel key, so it must not place, cancel or
  * refill real orders unless ALLOW_LIVE_ORDERS=1 is set explicitly. (ALLOW_LIVE_ORDERS is declared on Env by worker/env.ts.)
  */
 function assertOrdersAllowed(env: Env): void {
@@ -115,10 +116,10 @@ function assertOrdersAllowed(env: Env): void {
   if (env.DEV_FAKE_USER_ID && allow !== "1") throw new OrderError("DEV_ORDERS_DISABLED");
 }
 
-/** Maps a NotPanel error for cancel/refill; shop-side codes are hidden behind SERVICE_UNAVAILABLE with no supplier details. */
+/** Maps an fpanel error for cancel/refill; shop-side codes are hidden behind SERVICE_UNAVAILABLE with no supplier details. */
 function shopSafeError(env: Env, e: NotPanelError): OrderError {
   if (SHOP_SIDE.has(e.code)) {
-    console.error("NotPanel shop-side error", e.code, e.message);
+    console.error("fpanel shop-side error", e.code, e.message);
     void alertAdmins(env, "notpanel", `Provider refused a request: <b>${e.code}</b>. Check your provider account and API key.`);
     return new OrderError("SERVICE_UNAVAILABLE", undefined);
   }
@@ -126,8 +127,8 @@ function shopSafeError(env: Env, e: NotPanelError): OrderError {
 }
 
 /**
- * Charges the user's balance and sends the order to NotPanel. If NotPanel rejects it, the charge is refunded.
- * If NotPanel can't be reached, the order stays "submitting" and the cron job recovers it by request_id.
+ * Charges the user's balance and sends the order to fpanel. If fpanel rejects it, the charge is refunded.
+ * If fpanel can't be reached, the order stays "submitting" and the cron job recovers it by request_id.
  */
 export async function placeOrder(
   env: Env,
@@ -208,8 +209,8 @@ export async function placeOrder(
       const shop = SHOP_SIDE.has(e.code);
       await failOrder(env, id, shop ? "SERVICE_UNAVAILABLE" : e.code);
       if (shop) {
-        console.error("NotPanel shop-side error", e.code, e.message);
-        await alertAdmins(env, "notpanel", `Provider refused an order: <b>${e.code}</b>${e.code === "INSUFFICIENT_BALANCE" ? " (your provider balance is too low; top it up on avirah.com.bd)" : ""}. Customers can't order until this is fixed; their money was refunded to their balance.`);
+        console.error("fpanel shop-side error", e.code, e.message);
+        await alertAdmins(env, "notpanel", `Provider refused an order: <b>${e.code}</b>${e.code === "INSUFFICIENT_BALANCE" ? " (your fpanel balance is too low; top it up on avirah.com.bd)" : ""}. Customers can't order until this is fixed; their money was refunded to their balance.`);
       }
       // Supplier details are never shown to users
       throw new OrderError(shop ? "SERVICE_UNAVAILABLE" : e.code, shop ? undefined : e.details);
@@ -250,7 +251,7 @@ function creditRefundStmts(env: Env, id: number, now: number): D1PreparedStateme
 
 export function refundFor(o: OrderRow, status: OrderStatus, remains: number | null, st?: NpStatus): number {
   if (status === "partial" && remains === null) {
-    // No remains from NotPanel: split our charge in the same ratio as NotPanel's own refund vs. charge
+    // No remains from fpanel: split our charge in the same ratio as fpanel's own refund vs. charge
     if (st && st.refund !== undefined && st.refund !== "" && st.charge !== undefined && st.charge !== "") {
       const npRefund = usdToMicro(st.refund);
       const npCharge = usdToMicro(st.charge);
@@ -274,7 +275,7 @@ export function refundFor(o: OrderRow, status: OrderStatus, remains: number | nu
 
 const num = (v: unknown): number | null => (v === null || v === undefined || v === "" ? null : Number(v));
 
-/** Applies a NotPanel status (from polling or a webhook). Refunds and notifies when the order finishes. */
+/** Applies an fpanel status (from polling or a webhook). Refunds and notifies when the order finishes. */
 export async function applyStatus(env: Env, o: OrderRow, st: NpStatus): Promise<OrderRow> {
   const status = normStatus(st.status_key);
   if (!status) return o;
@@ -407,7 +408,7 @@ export async function refreshOrder(env: Env, o: OrderRow): Promise<OrderRow> {
   return o;
 }
 
-/** An order whose add call timed out: ask NotPanel by request_id whether it exists. */
+/** An order whose add call timed out: ask fpanel by request_id whether it exists. */
 async function recoverSubmitting(env: Env, o: OrderRow): Promise<OrderRow> {
   try {
     const d = await npCall<NpStatus & { order: number }>(env, "order_details", { request_id: requestId(env, o.id) });

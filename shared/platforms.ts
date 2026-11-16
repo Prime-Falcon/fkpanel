@@ -1,4 +1,4 @@
-// Display names for NotPanel platform slugs. Unknown slugs fall back to a title-cased slug.
+// Display names for fpanel platform slugs. Unknown slugs fall back to a title-cased slug.
 
 const NAMES: Record<string, string> = {
   telegram: "Telegram",

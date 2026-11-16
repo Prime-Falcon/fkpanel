@@ -1,3 +1,4 @@
+/* Maintained by Ashraful Zaman — https://www.avirah.com.bd */
 /* White-label Mini App. "Quiet iOS" with a brand accent (design spec v3). Cobalt is the default accent; the brand colors below
    are overridden at runtime by <style id="brand-theme"> (shared/theme.ts) from the owner's preset or custom color.
    Surfaces follow Telegram's light/dark colorScheme using the design palettes (not the user's custom theme).

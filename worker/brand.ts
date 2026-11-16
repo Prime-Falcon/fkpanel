@@ -1,3 +1,4 @@
+// Maintained & customized by Ashraful Zaman — https://www.avirah.com.bd
 // What the owner can brand: name, logo, colors and links, as the app and the bot show them.
 import { DEFAULT_PRESET, PRESET_IDS, type BrandInfo, type ButtonIcons, validButtonIcons, validCustomEmojiMap, validHexColor, validHttpsUrl } from "../shared/brand";
 import type { Settings } from "./settings";

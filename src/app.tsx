@@ -1,3 +1,4 @@
+// Maintained & customized by Ashraful Zaman — https://www.avirah.com.bd
 import { Fragment, type JSX } from "preact";
 import { useEffect, useState } from "preact/hooks";
 import { ApiError } from "./api";

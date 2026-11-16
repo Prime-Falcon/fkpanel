@@ -1,3 +1,4 @@
+// Maintained & customized by Ashraful Zaman — https://www.avirah.com.bd
 // Branding and setup contract shared by the Worker and the app: what an owner can customize, the color presets,
 // and the validation rules both sides apply (the server always re-checks).
 
@@ -31,7 +32,7 @@ export interface PublicStatus {
 export interface SetupStatus {
   botUsername: string | null;
   botName: string | null;
-  /** A NotPanel key is available (Worker secret or saved in setup) and NotPanel accepted it */
+  /** An fpanel key is available (Worker secret or saved in setup) and fpanel accepted it */
   notpanelOk: boolean;
   notpanelError: string | null;
   /** Steps still to run, in order */
@@ -101,8 +102,8 @@ export function validHttpsUrl(v: unknown): v is string {
 }
 
 /**
- * NotPanel API keys look like np_live_<hex>. This is only the first gate: the server also checks the key with
- * NotPanel itself (worker/notpanel.ts verifyNotPanelKey) before accepting it. Other panels' keys never pass.
+ * fpanel API keys look like np_live_<hex>. This is only the first gate: the server also checks the key with
+ * fpanel itself (worker/notpanel.ts verifyNotPanelKey) before accepting it. Other panels' keys never pass.
  */
 export const NOTPANEL_KEY_RE = /^(?:np_live_[A-Za-z0-9]{24,64}|[a-f0-9]{32}|[A-Za-z0-9]{32,64})$/;
 

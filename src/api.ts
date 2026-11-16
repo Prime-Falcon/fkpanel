@@ -1,3 +1,4 @@
+// Maintained & customized by Ashraful Zaman — https://www.avirah.com.bd
 import { initData } from "./tg";
 
 export class ApiError extends Error {

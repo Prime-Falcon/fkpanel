@@ -1,4 +1,4 @@
-// Connecting the bot and NotPanel to this deployment: Telegram webhook, NotPanel webhook, menu button, bot texts.
+// Connecting the bot and fpanel to this deployment: Telegram webhook, fpanel webhook, menu button, bot texts.
 // Shared by the setup page (routes/setup.ts), the admin panel and the legacy /setup/<secret> routes.
 import { LANGS } from "../shared/types";
 import { webhookSecret } from "./auth";
@@ -23,7 +23,7 @@ export async function setTelegramWebhook(env: Env, origin: string): Promise<void
   });
 }
 
-/** NotPanel webhook for instant order updates (the cron job is the backup). Returns the settings to save, or the error text. */
+/** fpanel webhook for instant order updates (the cron job is the backup). Returns the settings to save, or the error text. */
 export async function registerNotPanelWebhook(env: Env, s: Settings, origin: string): Promise<{ values?: Partial<Settings>; error?: string }> {
   try {
     if (s.np_webhook_id) await npCall(env, "webhook.remove", { id: s.np_webhook_id }).catch(() => undefined);

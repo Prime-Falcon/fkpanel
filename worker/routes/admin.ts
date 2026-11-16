@@ -1,3 +1,4 @@
+// Maintained & customized by Ashraful Zaman — https://www.avirah.com.bd
 import { Hono } from "hono";
 import { platformName } from "../../shared/platforms";
 import { MONEY_SUMS_SQL, parsePeriod, periodStart, totalsFrom, type MoneySums, type ReportPeriod } from "../../shared/profit";
@@ -211,7 +212,7 @@ admin.put("/owners", async (c) => {
   return c.json({ ok: true, owners: { env: fixed, added } });
 });
 
-/** Replaces the NotPanel API key after NotPanel itself accepted it. The key is never returned, only its last 4 characters. */
+/** Replaces the fpanel API key after fpanel itself accepted it. The key is never returned, only its last 4 characters. */
 admin.put("/notpanel-key", async (c) => {
   const b = await readBody<{ key?: unknown }>(c);
   if (!b || typeof b.key !== "string" || b.key.length > 200) return err(c, 400, "INVALID_BODY");
@@ -220,7 +221,7 @@ admin.put("/notpanel-key", async (c) => {
   if (!check.ok) return err(c, 400, check.code, { message: check.message });
   const old = c.get("settings");
   await setSettings(c.env, { np_api_key: key });
-  // The NotPanel webhook belongs to the account of the key: register it again with the new one
+  // The fpanel webhook belongs to the account of the key: register it again with the new one
   const wh = await registerNotPanelWebhook(c.env, { ...old, np_webhook_id: "" }, new URL(c.req.url).origin);
   if (wh.values) await setSettings(c.env, wh.values);
   return c.json({ ok: true, key_hint: "…" + key.slice(-4), webhook: !wh.error });
@@ -722,7 +723,7 @@ admin.get("/orders", async (c) => {
   });
 });
 
-// ---- Connection: NotPanel webhook + bot setup ----
+// ---- Connection: fpanel webhook + bot setup ----
 
 /** Sends one of every bot message (sample data) to the owner's chat */
 admin.post("/preview-messages", async (c) => {

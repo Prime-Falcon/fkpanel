@@ -1,3 +1,4 @@
+// Maintained & customized by Ashraful Zaman — https://www.avirah.com.bd
 // Public endpoints: /api/public (what a browser opening the app needs) and /api/setup/* (the first-run wizard).
 // The wizard is useless without the bot token: unlock compares it with the BOT_TOKEN secret and hands back a signed,
 // 30-minute session token. Once setup is done and an admin exists, every setup endpoint answers 403 SETUP_DONE.
@@ -26,7 +27,7 @@ const fail = (c: SetupCtx, status: number, code: string, details?: Record<string
 /** Setup is over once it finished and somebody is an admin */
 export const setupClosed = (env: Env, s: Settings) => s.setup_done === 1 && ownerIds(env, s).length > 0;
 
-/** Telegram and NotPanel error texts never contain secrets, but make sure of it before anything leaves the Worker */
+/** Telegram and fpanel error texts never contain secrets, but make sure of it before anything leaves the Worker */
 function redact(env: Env, s: Settings, msg: string): string {
   let out = msg;
   for (const secret of [env.BOT_TOKEN, npKey(env, s), env.TG_WEBHOOK_SECRET]) if (secret) out = out.split(secret).join("…");
@@ -58,11 +59,11 @@ setup.use("*", async (c, next) => {
   await next();
 });
 
-/** NotPanel check of the effective key, remembered for a minute (it costs two NotPanel requests) */
+/** fpanel check of the effective key, remembered for a minute (it costs two provider requests) */
 let keyMemo: { key: string; at: number; result: KeyCheck } | null = null;
 export async function checkEffectiveKey(env: Env, s: Settings): Promise<KeyCheck> {
   const key = npKey(env, s);
-  if (!key) return { ok: false, code: "NOT_NOTPANEL_KEY", message: "No NotPanel API key yet." };
+  if (!key) return { ok: false, code: "NOT_NOTPANEL_KEY", message: "No fpanel API key yet." };
   if (keyMemo && keyMemo.key === key && Date.now() - keyMemo.at < 60_000) return keyMemo.result;
   const result = await verifyNotPanelKey(key);
   keyMemo = { key, at: Date.now(), result };
@@ -168,7 +169,7 @@ async function runStep(env: Env, s: Settings, step: SetupStep, origin: string): 
       await setTelegramWebhook(env, origin);
       const wh = await registerNotPanelWebhook(env, s, origin);
       if (wh.values) await setSettings(env, wh.values);
-      else console.warn("setup: NotPanel webhook not registered, the cron job covers order updates", wh.error);
+      else console.warn("setup: fpanel webhook not registered, the cron job covers order updates", wh.error);
       return;
     }
     case "menu": {

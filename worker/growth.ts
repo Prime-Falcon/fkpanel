@@ -1,3 +1,4 @@
+// Maintained & customized by Ashraful Zaman — https://www.avirah.com.bd
 // Update-channel gate and referral rewards.
 import { type Lang, pickLang, type ReferralStats } from "../shared/types";
 import { starsCredit } from "../shared/stars";

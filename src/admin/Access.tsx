@@ -1,4 +1,4 @@
-// Admin > Settings: replace the NotPanel API key, and manage who is an admin. English only.
+// Admin > Settings: replace the fpanel API key, and manage who is an admin. English only.
 import { useState } from "preact/hooks";
 import { looksLikeNotPanelKey } from "../../shared/brand";
 import { api, ApiError } from "../api";

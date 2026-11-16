@@ -1,3 +1,4 @@
+// Developed & integrated by Ashraful Zaman — https://www.avirah.com.bd
 import type { Env } from "./env";
 import { getSettings, type Settings } from "./settings";
 import { botText } from "./i18n";

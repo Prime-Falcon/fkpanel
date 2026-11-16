@@ -1,3 +1,4 @@
+// Maintained & customized by Ashraful Zaman — https://www.avirah.com.bd
 import { useEffect, useRef, useState } from "preact/hooks";
 import { LANGS, LANG_NAMES, langLabel, type Lang } from "../../shared/types";
 import { clearApiCache } from "../api";

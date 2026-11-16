@@ -1,3 +1,4 @@
+// Maintained & customized by Ashraful Zaman — https://www.avirah.com.bd
 // Minimal Telegram Bot API client.
 
 import type { ButtonIcons } from "../shared/brand";

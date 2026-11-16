@@ -1,3 +1,4 @@
+// Maintained & customized by Ashraful Zaman — https://www.avirah.com.bd
 // Runtime branding: applies the owner's colors (one <style id="brand-theme">), name, logo, tab title and favicon.
 // The last brand is cached in localStorage; index.html paints it before the bundle loads (no color flash).
 import { DEFAULT_PRESET, THEME_PRESETS, type BrandInfo } from "../shared/brand";

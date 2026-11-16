@@ -1,3 +1,4 @@
+// Maintained & customized by Ashraful Zaman — https://www.avirah.com.bd
 // Home (`/`, tab "New order"), design spec §5.1. Also exports PlatformGrid (§5.15), used by the platform picker sheet.
 import { useEffect, useState } from "preact/hooks";
 import type { PlatformItem, ServiceItem } from "../../shared/types";

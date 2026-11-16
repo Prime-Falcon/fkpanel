@@ -1,3 +1,4 @@
+// Maintained & customized by Ashraful Zaman — https://www.avirah.com.bd
 // Telegram Mini App initData validation (HMAC-SHA256 with the bot token).
 // https://core.telegram.org/bots/webapps#validating-data-received-via-the-mini-app
 
@@ -93,7 +94,7 @@ export async function validateInitData(
   return { user, authDate, startParam: params.get("start_param") };
 }
 
-/** HMAC-SHA256 hex of `${timestamp}.${body}` — NotPanel webhook signature */
+/** HMAC-SHA256 hex of `${timestamp}.${body}` — fpanel webhook signature */
 export async function notpanelSignature(secret: string, timestamp: string, body: string): Promise<string> {
   return toHex(await hmac(enc.encode(secret), `${timestamp}.${body}`));
 }

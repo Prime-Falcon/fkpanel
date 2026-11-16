@@ -207,7 +207,7 @@ describe("refunds", () => {
 const GOOD_KEY = "np_live_" + "a1b2c3d4".repeat(5); // np_live_ + 40 hex-like chars
 const jsonResponse = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
 
-describe("NotPanel key gate", () => {
+describe("fpanel key gate", () => {
   afterEach(() => vi.unstubAllGlobals());
 
   it("accepts only np_live_ keys of a sane length", async () => {
@@ -235,7 +235,7 @@ describe("NotPanel key gate", () => {
     expect(npKey({}, { np_api_key: "" })).toBe("");
   });
 
-  it("verifyNotPanelKey needs NotPanel-shaped balance and catalog answers", async () => {
+  it("verifyNotPanelKey needs provider-shaped balance and catalog answers", async () => {
     const { verifyNotPanelKey } = await import("../worker/notpanel");
     const catalog = { catalog_updated_at: "2026-10-20T00:00:00Z", total_pages: 12, items: [{ service: "1", platform: { slug: "telegram", name: "Telegram" } }] };
     const answer = (balance: unknown, cat: unknown) =>
@@ -258,7 +258,7 @@ describe("NotPanel key gate", () => {
     vi.stubGlobal("fetch", answer({ balance: "1", currency: "USD" }, { ...catalog, items: [{ service: "1", platform: { slug: 5 } }] }));
     expect(await verifyNotPanelKey(GOOD_KEY)).toMatchObject({ ok: false, code: "NOT_NOTPANEL_KEY" });
 
-    // NotPanel itself says no
+    // Provider itself says no
     vi.stubGlobal("fetch", vi.fn(async () => jsonResponse({ error: "Invalid API key", error_code: "INVALID_KEY", retryable: false }, 401)));
     expect(await verifyNotPanelKey(GOOD_KEY)).toEqual({ ok: false, code: "NOTPANEL_REJECTED", message: "Invalid API key" });
   });
@@ -456,7 +456,7 @@ describe("bot command menus", () => {
   });
 });
 
-describe("NotPanel requests", () => {
+describe("fpanel requests", () => {
   it("use fetch options that Cloudflare Workers accept (redirect 'error' is rejected at the edge)", async () => {
     const { np } = await import("../worker/notpanel");
     const calls: RequestInit[] = [];
@@ -599,7 +599,7 @@ describe("money reporting (sale, cost, profit, margin)", () => {
     expect(saleOf(done)).toBe(130_000);
     expect(profitOf(done)).toBe(30_000);
     expect(orderMargin(done)).toBeCloseTo(23.077, 3);
-    // partial: half refunded, NotPanel kept half of its cost
+    // partial: half refunded, fpanel kept half of its cost
     const partial = { charge: 130_000, refund: 65_000, cost: 50_000 };
     expect(profitOf(partial)).toBe(15_000);
     expect(orderMargin(partial)).toBeCloseTo(23.077, 3);
@@ -626,7 +626,7 @@ describe("money reporting (sale, cost, profit, margin)", () => {
     expect(empty).toMatchObject({ orders: 0, sales: 0, cost: 0, profit: 0, margin: null, noCost: 0 });
   });
 
-  it("per-1,000 margin compares the sell price with NotPanel's price", async () => {
+  it("per-1,000 margin compares the sell price with fpanel's price", async () => {
     const { rateMargin } = await import("../shared/profit");
     expect(rateMargin(52_000, sellRate(52_000, 30, null))).toMatchObject({ profit: 15_600 });
     expect(rateMargin(52_000, sellRate(52_000, 30, null)).margin).toBeCloseTo(23.08, 2);

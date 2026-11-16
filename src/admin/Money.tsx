@@ -63,7 +63,7 @@ export function totalCells(t: MoneyTotals): Cell[] {
   ];
 }
 
-/** Per 1,000: NotPanel's price, our sell price (USD + Stars) and the margin. Zero or negative margin shows red. */
+/** Per 1,000: fpanel's price, our sell price (USD + Stars) and the margin. Zero or negative margin shows red. */
 export function rateCells(cost: number, sell: number, sellStars: number): Cell[] {
   const { profit, margin } = rateMargin(cost, sell);
   const bad = profit <= 0 ? "neg" : "pos";

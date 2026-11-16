@@ -1,3 +1,4 @@
+// Maintained & customized by Ashraful Zaman — https://www.avirah.com.bd
 // What a plain browser sees at the app URL (outside Telegram): the one-time setup wizard for a fresh deployment, or a
 // branded "open the bot in Telegram" page once it is configured. English only, like the admin panel.
 import { useEffect, useRef, useState } from "preact/hooks";
@@ -114,6 +115,12 @@ function OpenInTelegram({ bot }: { bot: string | null }) {
       ) : (
         <Notice tone="plain">Open the bot in Telegram to use this app.</Notice>
       )}
+      <p class="note">
+        Developed by Ashraful Zaman ·{" "}
+        <a href="https://www.avirah.com.bd" target="_blank" rel="noopener">
+          www.avirah.com.bd
+        </a>
+      </p>
     </Screen>
   );
 }
@@ -492,6 +499,12 @@ function Done({ bot }: { bot: string | null }) {
       ) : null}
       <p class="note">
         Customize the name, logo and colors in the app under Profile, then Admin, then Branding.
+      </p>
+      <p class="note">
+        Developed by Ashraful Zaman ·{" "}
+        <a href="https://www.avirah.com.bd" target="_blank" rel="noopener">
+          www.avirah.com.bd
+        </a>
       </p>
     </Screen>
   );

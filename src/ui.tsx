@@ -1,3 +1,4 @@
+// Maintained & customized by Ashraful Zaman — https://www.avirah.com.bd
 // Shared UI primitives (design spec v3, section 3). Screens compose these; they add no CSS of their own.
 import { Fragment, type ComponentChildren, type ComponentType, type JSX, type Ref } from "preact";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "preact/hooks";

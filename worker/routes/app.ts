@@ -1,3 +1,4 @@
+// Maintained & customized by Ashraful Zaman — https://www.avirah.com.bd
 import { Hono, type Context } from "hono";
 import { type LedgerItem, type Me, type OrderDraft, pickLang, type Lang, LANGS } from "../../shared/types";
 import { validateInitData, type TgUser } from "../auth";
@@ -333,7 +334,7 @@ async function ownOrder(c: C): Promise<OrderRow | null> {
 app.get("/orders/:id", async (c) => {
   let o = await ownOrder(c);
   if (!o) return err(c, 404, "ORDER_NOT_FOUND");
-  // Re-ask NotPanel at most every 90 s (20 s while the order is still being submitted); webhooks and cron cover the rest
+  // Re-ask fpanel at most every 90 s (20 s while the order is still being submitted); webhooks and cron cover the rest
   if (Date.now() / 1000 - o.checked_at > (o.status === "submitting" ? 20 : 90)) o = await refreshOrder(c.env, o);
   const stars = await paidWithStars(c.env, [o.id]);
   return c.json(orderView(o, stars.has(o.id)));

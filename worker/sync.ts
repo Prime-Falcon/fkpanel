@@ -1,6 +1,7 @@
+// Maintained & customized by Ashraful Zaman — https://www.avirah.com.bd
 // Free-plan friendly price sync.
 //
-// NotPanel's full `services` list is ~7 MB, too heavy to parse inside the free plan's 10 ms CPU budget.
+// fpanel's full `services` list is ~7 MB, too heavy to parse inside the free plan's 10 ms CPU budget.
 // Instead we walk the paged `catalog` (100 per page) a few pages per cron tick, keep only services with a
 // measured average time (admin setting), and fetch full details (form fields, drip-feed, step) for changed
 // ones with `services?service=<ids>`. Only changed rows are written.
@@ -115,7 +116,7 @@ const UPSERT = `INSERT INTO services (id, platform, category, category_slug, nam
 /** One cron tick: start a run when due, then process the next few catalog pages. */
 export async function syncTick(env: Env): Promise<void> {
   const s = await getSettings(env, { fresh: true });
-  // A fresh install has no NotPanel key until setup saves one: nothing to sync yet
+  // A fresh install has no fpanel key until setup saves one: nothing to sync yet
   if (!looksLikeNotPanelKey(npKey(env, s))) return;
   const now = Math.floor(Date.now() / 1000);
   let state = s.sync_state ? (JSON.parse(s.sync_state) as SyncState) : null;
@@ -143,14 +144,14 @@ export async function syncTick(env: Env): Promise<void> {
   if (state.page === 1) {
     state.catalogAt = pages[0].catalog_updated_at;
     state.totalPages = pages[0].total_pages;
-    // Nothing changed at NotPanel since our last full run: done after one request.
+    // Nothing changed at fpanel since our last full run: done after one request.
     if (!state.force && s.last_catalog_at && s.last_catalog_at === state.catalogAt) {
       await finish(env, s, { ...state.stats, unchanged: true, total: -1 }, null);
       return;
     }
   }
 
-  // Services we list, with their position in NotPanel's catalog (popular first)
+  // Services we list, with their position in fpanel's catalog (popular first)
   const items: { item: CatalogItem; sort: number; fp: string }[] = [];
   let badRate = 0;
   for (const p of pages)
@@ -247,7 +248,7 @@ export async function syncTick(env: Env): Promise<void> {
     if (renamed.length) stmts.push(env.DB.prepare("DELETE FROM service_names WHERE service_id IN (SELECT value FROM json_each(?1))").bind(JSON.stringify(renamed)));
     if (stmts.length) await env.DB.batch(stmts);
 
-    // Seen = unchanged rows we already have + rows written now (a changed service NotPanel didn't detail is left out)
+    // Seen = unchanged rows we already have + rows written now (a changed service fpanel didn't detail is left out)
     const changedIds = new Set(changed.map((c) => Number(c.item.service)));
     for (const id of ids) if (!changedIds.has(id)) state.seen.push(id);
     for (const r of rows) state.seen.push(r[0] as number);
@@ -258,7 +259,7 @@ export async function syncTick(env: Env): Promise<void> {
   else await setSettings(env, { sync_state: JSON.stringify(state) });
 }
 
-/** End of a run: retire services NotPanel no longer lists, rebuild browse lists, save the summary. */
+/** End of a run: retire services fpanel no longer lists, rebuild browse lists, save the summary. */
 async function finish(env: Env, s: Settings, stats: SyncStats, state: SyncState | null): Promise<void> {
   const now = Math.floor(Date.now() / 1000);
   if (stats.error) await alertAdmins(env, "sync", `The price and service sync with provider failed: <b>${stats.error.replace(/[<>&]/g, "")}</b>. Prices stay as they were; it retries on schedule. If it keeps failing, check your provider API key.`);

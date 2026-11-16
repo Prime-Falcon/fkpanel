@@ -1,3 +1,4 @@
+// Maintained & customized by Ashraful Zaman — https://www.avirah.com.bd
 import { starsCredit } from "../shared/stars";
 import { type Lang, type OrderDraft, pickLang } from "../shared/types";
 import { getService } from "./catalog";

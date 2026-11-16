@@ -1,4 +1,4 @@
-// Inline-SVG artwork (design spec §8): NotPanel stickers. Pastel plates, 1.5px ink outlines, flat offset shadows;
+// Inline-SVG artwork (design spec §8): fpanel stickers. Pastel plates, 1.5px ink outlines, flat offset shadows;
 // no gradients, filters or masks. Motion comes from styles.css: `.enter` on the <svg> (A1–A3, once) or `.celebrate`
 // on the `.success-art` wrapper (A4, A5) animates the a-* groups below. An animated <g> never carries its own
 // transform attribute (§7.8), so positioned content always sits one <g> deeper.

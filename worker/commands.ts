@@ -30,7 +30,7 @@ export function userCommands(lang: Lang): Command[] {
 
 export const ADMIN_COMMANDS: Command[] = [
   { command: "admin", description: "Admin panel" },
-  { command: "stats", description: "Sales, users and NotPanel balance" },
+  { command: "stats", description: "Sales, users and fpanel balance" },
   { command: "broadcast", description: "Broadcast a message to all users" },
   { command: "preview", description: "Preview every bot message" },
 ];

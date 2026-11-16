@@ -103,7 +103,7 @@ export function listCategories(env: Env, s: Settings, platform: string): Promise
 }
 
 /**
- * NotPanel only translates names on request. When a list has untranslated names, fetch that category's
+ * fpanel only translates names on request. When a list has untranslated names, fetch that category's
  * catalog page in the user's language once and keep the names (English is kept as a fallback marker).
  */
 async function fillNames(env: Env, lang: Lang, rows: Row[], page: number): Promise<void> {

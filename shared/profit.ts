@@ -1,13 +1,13 @@
 // Money reporting maths shared by the Worker (totals) and the admin panel (rows). Everything is integer micro-USD.
 //
 //   Sale   = what the customer paid for an order: charge - refund (a failed order is fully refunded, so its sale is 0)
-//   Cost   = what NotPanel charged us (orders.cost, null while unknown, e.g. an order that is still being submitted)
+//   Cost   = what fpanel charged us (orders.cost, null while unknown, e.g. an order that is still being submitted)
 //   Profit = Sale - Cost            Margin = Profit / Sale
 //
 // Cost on partial and cancelled orders: nothing is scaled here. worker/orders.ts applyStatus() overwrites orders.cost
-// with NotPanel's reported `charge` on every status update, and refundFor() treats that `charge` as the amount left
-// after NotPanel's own `refund` (original = charge + refund). So by the time an order is final, `cost` is already the
-// net amount NotPanel kept, which pairs with our own net sale (charge - refund).
+// with fpanel's reported `charge` on every status update, and refundFor() treats that `charge` as the amount left
+// after fpanel's own `refund` (original = charge + refund). So by the time an order is final, `cost` is already the
+// net amount fpanel kept, which pairs with our own net sale (charge - refund).
 
 export interface OrderMoney {
   charge: number;
@@ -31,7 +31,7 @@ export function orderMargin(o: OrderMoney): number | null {
   return p === null ? null : marginPct(p, saleOf(o));
 }
 
-/** Per-1,000 view of a service: NotPanel's price vs. our sell price (both micro-USD per 1,000). */
+/** Per-1,000 view of a service: fpanel's price vs. our sell price (both micro-USD per 1,000). */
 export function rateMargin(cost: number, sell: number): { profit: number; margin: number | null } {
   return { profit: sell - cost, margin: marginPct(sell - cost, sell) };
 }

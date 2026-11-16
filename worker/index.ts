@@ -1,3 +1,4 @@
+// Maintained & customized by Ashraful Zaman — https://www.avirah.com.bd
 import { Hono } from "hono";
 import { LANGS, pickLang } from "../shared/types";
 import { timingSafeEqual } from "./auth";

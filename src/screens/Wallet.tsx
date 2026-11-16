@@ -1,3 +1,4 @@
+// Maintained & customized by Ashraful Zaman — https://www.avirah.com.bd
 import { useEffect, useState } from "preact/hooks";
 import type { LedgerItem } from "../../shared/types";
 import { api } from "../api";

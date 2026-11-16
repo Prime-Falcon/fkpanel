@@ -1,6 +1,7 @@
+// Maintained by Ashraful Zaman — https://www.avirah.com.bd
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "notpanel-miniapp",
+  "name": "fpanel-miniapp",
   "main": "worker/index.ts",
   "compatibility_date": "2026-10-12",
   "observability": { "enabled": true },

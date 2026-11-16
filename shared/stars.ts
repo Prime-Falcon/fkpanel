@@ -1,4 +1,5 @@
-// Money is stored and charged in micro-USD (NotPanel bills in dollars). Telegram Stars are only how users see it and
+// Maintained & customized by Ashraful Zaman — https://www.avirah.com.bd
+// Money is stored and charged in micro-USD (fpanel bills in dollars). Telegram Stars are only how users see it and
 // how they pay: 1 ⭐ paid credits 1/stars_per_usd dollars. These helpers are shared by the Worker and the app so both
 // always agree.
 

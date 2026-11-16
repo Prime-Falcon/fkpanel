@@ -1,3 +1,4 @@
+// Maintained & customized by Ashraful Zaman — https://www.avirah.com.bd
 // Owner-only admin panel (English only, per AGENTS.md). The server checks the owner's Telegram ID on every /api/admin call.
 // Same primitives as the customer screens (spec §5.13): Screen + LargeTitle + Section/List/Row, saves on the MainButton.
 import type { ComponentChildren, JSX } from "preact";
@@ -63,7 +64,7 @@ export function AdminRoutes({ parts, query }: { parts: string[]; query: URLSearc
 
 // ---------------- helpers ----------------
 
-const NP_WALLET = "https://avirah.com.bd";
+const FP_WALLET = "https://avirah.com.bd";
 const MAX_MARKUP = 1000;
 const ONE_USD = 1_000_000;
 
@@ -365,7 +366,7 @@ function AdminHome() {
                       {syncing ? <span class="spin" style="width: 14px; height: 14px;" /> : <Icon name="refill" size={14} stroke={2.4} />}
                       {syncing ? "Syncing…" : "Sync API"}
                     </Chip>
-                    <Chip tint label="Top up" onClick={() => openLink(NP_WALLET)}>
+                    <Chip tint label="Top up" onClick={() => openLink(FP_WALLET)}>
                       Top up
                       <Icon name="out" size={14} stroke={2.4} />
                     </Chip>
@@ -391,6 +392,12 @@ function AdminHome() {
                   ))}
                 </List>
               </Section>
+              <p class="note" style="text-align: center; margin-top: 8px;">
+                Developed &amp; maintained by Ashraful Zaman ·{" "}
+                <a href="https://www.avirah.com.bd" target="_blank" rel="noopener" onClick={(e) => { e.preventDefault(); openLink("https://www.avirah.com.bd"); }}>
+                  www.avirah.com.bd
+                </a>
+              </p>
             </>
           );
         }}
@@ -2072,6 +2079,12 @@ function AdminSettings() {
               />
             </List>
           </Section>
+          <p class="note" style="text-align: center; margin-top: 8px;">
+            Maintained by Ashraful Zaman ·{" "}
+            <a href="https://www.avirah.com.bd" target="_blank" rel="noopener" onClick={(e) => { e.preventDefault(); openLink("https://www.avirah.com.bd"); }}>
+              www.avirah.com.bd
+            </a>
+          </p>
         </>
       )}
     </Page>

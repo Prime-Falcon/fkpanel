@@ -1,3 +1,4 @@
+// Maintained & customized by Ashraful Zaman — https://www.avirah.com.bd
 import { DEFAULT_PRESET } from "../shared/brand";
 import { brandName, parseButtonIcons, parseEmojiMap } from "./brand";
 import type { Env } from "./env";
@@ -51,7 +52,7 @@ export const DEFAULTS = {
   owner_ids: "", // admins claimed or added in the app (env OWNER_IDS also counts)
   claim_code_hash: "", // SHA-256 of the one-time admin claim code
   claim_expires: 0,
-  np_api_key: "", // NotPanel key saved via setup/admin (env NOTPANEL_API_KEY is the fallback)
+  np_api_key: "", // fpanel key saved via setup/admin (env NOTPANEL_API_KEY is the fallback)
   logo_ver: 0, // > 0: a logo exists (value busts caches); negative: removed
   banner_ver: 0,
   setup_done: 0,

@@ -62,7 +62,7 @@ export function Icon({ name, size = 22, stroke = 1.9, class: cls, fill }: { name
 
 export { StarIcon, StarTileEmoji } from "./components/LottieEmoji";
 
-/** Picks a category icon and plate colour from words in the NotPanel category name (cosmetic only). */
+/** Picks a category icon and plate colour from words in the fpanel category name (cosmetic only). */
 const CAT_RULES: [RegExp, IconName, string][] = [
   [/member|follower|subscri|friend|fans/i, "users", "var(--lavender-strong)"],
   [/view|impression|reach|play|stream|traffic|visit/i, "eye", "var(--sky)"],

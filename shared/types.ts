@@ -1,3 +1,4 @@
+// Maintained & customized by Ashraful Zaman — https://www.avirah.com.bd
 import type { BrandInfo } from "./brand";
 // Types shared by the Worker API and the Mini App.
 
@@ -7,7 +8,7 @@ export const LANGS = [
 ] as const;
 export type Lang = (typeof LANGS)[number];
 
-/** Languages NotPanel's API can translate service names into; others show English service names. */
+/** Languages fpanel's API can translate service names into; others show English service names. */
 export const NP_LANGS: readonly Lang[] = ["en", "es", "pt", "ru", "tr", "ar", "hi", "id", "fr", "zh"];
 
 /** Right-to-left languages */
@@ -173,7 +174,7 @@ export interface ServiceDetail extends ServiceItem {
 
 export interface OrderView {
   id: number;
-  /** Number shown to users: the NotPanel order id, or the internal id while not yet accepted. */
+  /** Number shown to users: the fpanel order id, or the internal id while not yet accepted. */
   number: number;
   serviceId: number;
   serviceName: string;

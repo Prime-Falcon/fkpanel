@@ -3,7 +3,7 @@
 
 # Telegram bot token from @BotFather (https://t.me/BotFather)
 BOT_TOKEN=123456:ABC-DEF
-# NotPanel API key (https://notpanel.com/developers). Optional here: it can also be pasted in the setup page.
+# fpanel API key (https://fpanel.avirah.com.bd). Optional here: it can also be pasted in the setup page.
 NOTPANEL_API_KEY=np_live_xxx
 
 # Local development only, not asked for on deploy: opens the app in a normal browser as this Telegram user id

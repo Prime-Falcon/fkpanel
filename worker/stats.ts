@@ -1,4 +1,5 @@
-// /stats for admins: sales and profit (today, 7 days, all time), users, open orders, referrals and the NotPanel balance.
+// Maintained & customized by Ashraful Zaman — https://www.avirah.com.bd
+// /stats for admins: sales and profit (today, 7 days, all time), users, open orders, referrals and the fpanel balance.
 // English only, like the admin panel. Money is micro-USD; sales are also shown in Stars as customers saw them.
 import { shownStars } from "../shared/stars";
 import { starsText } from "./botMessages";

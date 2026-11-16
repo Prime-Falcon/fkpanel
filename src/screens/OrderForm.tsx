@@ -1,3 +1,4 @@
+// Maintained & customized by Ashraful Zaman — https://www.avirah.com.bd
 // Order form (`/s/:id`, step 4 of 4), design spec §5.6. Reads top to bottom like a form: what, where, how many,
 // how to pay, total. The MainButton always says exactly what will happen.
 //
@@ -299,7 +300,7 @@ export function OrderForm({ serviceId, query }: { serviceId: number; query: URLS
           <div class="head">
             <PlatformLogo slug={svc.platform} size={44} radius={12} />
             <div>
-              {/* NotPanel data (Latin names, brackets, IDs): isolated so it reads correctly inside Arabic UI. */}
+              {/* fpanel data (Latin names, brackets, IDs): isolated so it reads correctly inside Arabic UI. */}
               <b class="t-headline" role="heading" aria-level={1}>
                 <bdi>{svc.name}</bdi>
               </b>
@@ -428,7 +429,7 @@ export function OrderForm({ serviceId, query }: { serviceId: number; query: URLS
         </Section>
       ) : null}
 
-      {/* 5. Extra fields from NotPanel */}
+      {/* 5. Extra fields from fpanel */}
       {svc.fields.map((f) => (
         <FieldInput key={f.key} f={f} value={fields[f.key] ?? ""} error={fieldError(f)} isLines={f.key === linesKey} onChange={(v) => setFields((x) => ({ ...x, [f.key]: v }))} />
       ))}
@@ -562,7 +563,7 @@ function FieldError({ id, children }: { id: string; children: ComponentChildren 
   );
 }
 
-/** One extra NotPanel field: emoji reactions, a choice, a list of lines, or a text/number/link input. */
+/** One extra fpanel field: emoji reactions, a choice, a list of lines, or a text/number/link input. */
 function FieldInput({ f, value, onChange, error, isLines }: { f: ServiceField; value: string; onChange: (v: string) => void; error: string | null; isLines: boolean }) {
   const id = `f-${f.key}`;
   const label = f.required ? `${f.label} *` : f.label;

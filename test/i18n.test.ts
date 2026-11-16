@@ -90,7 +90,7 @@ describe("brand placeholder", () => {
     ...Object.entries(botAll).flatMap(([l, d]) => Object.entries(d).map(([k, v]) => [`bot ${l} ${k}`, v] as [string, string])),
   ];
 
-  it("never names NotPanel in a translation", () => {
+  it("never names panel brand in a translation", () => {
     expect(texts.filter(([, v]) => /notpanel/i.test(v)).map(([k]) => k)).toEqual([]);
   });
 

@@ -1,4 +1,4 @@
-// Urgent problems the owner must fix (bot not admin in the update channel, NotPanel refusing orders, low NotPanel
+// Urgent problems the owner must fix (bot not admin in the update channel, fpanel refusing orders, low fpanel
 // balance, price sync failing) are sent to every admin in the bot. Each kind is sent at most once per 6 hours.
 // English only, like the admin panel.
 import { type Env, ownerIds } from "./env";
@@ -29,7 +29,7 @@ export async function alertAdmins(env: Env, kind: AlertKind, text: string): Prom
   }
 }
 
-/** Hourly: warn when the NotPanel balance is below the admin's "warn when below" setting */
+/** Hourly: warn when the fpanel balance is below the admin's "warn when below" setting */
 export async function checkNotPanelBalance(env: Env): Promise<void> {
   const s = await getSettings(env);
   if (!s.low_balance || !s.setup_done) return;

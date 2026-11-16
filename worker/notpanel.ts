@@ -1,3 +1,4 @@
+// Maintained & customized by Ashraful Zaman — https://www.avirah.com.bd
 // SMMGen API v2 client. https://my.smmgen.com/api/v2
 import { looksLikeNotPanelKey } from "../shared/brand";
 import { platformName } from "../shared/platforms";

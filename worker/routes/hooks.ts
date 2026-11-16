@@ -1,3 +1,4 @@
+// Maintained & customized by Ashraful Zaman — https://www.avirah.com.bd
 import { Hono } from "hono";
 import { notpanelSignature, timingSafeEqual } from "../auth";
 import type { Env } from "../env";
